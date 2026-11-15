@@ -1,22 +1,93 @@
 {
   "id": "fusion-plugin-task-observability",
-  "name": "Task Observability",
-  "version": "0.1.0",
-  "description": "Preview task assessment, model selection, and lifecycle reporting with synthetic tasks.",
+  "name": "Fusion Task Lens",
+  "version": "0.2.0",
+  "description": "Advisory task assessment, local task card and synthetic lifecycle scenarios. Automatic selection is unavailable.",
   "fusionVersion": ">=0.77.0",
   "settingsSchema": {
-    "assessorModel": {"type":"string","label":"Assessment model","group":"Assessment","defaultValue":"openai-codex/gpt-6.1-terra"},
-    "assessmentInputChars": {"type":"number","label":"Maximum assessment characters","group":"Assessment","defaultValue":12000},
-    "assessmentOutputTokens": {"type":"number","label":"Maximum assessment output tokens","group":"Assessment","defaultValue":1200},
-    "assessmentTimeoutSeconds": {"type":"number","label":"Assessment timeout in seconds","group":"Assessment","defaultValue":30},
-    "guidance": {"type":"string","label":"Assessment guidance","group":"Assessment","multiline":true,"defaultValue":""},
-    "modelOrder": {"type":"array","itemType":"string","label":"Executor preference order","group":"Routing","defaultValue":["terra","sol","flash"]},
-    "baseline": {"type":"string","label":"Baseline executor","group":"Routing","defaultValue":"terra"},
-    "maxOutcomes": {"type":"number","label":"Independent outcomes before proposing a split","group":"Routing","defaultValue":2},
-    "minSamples": {"type":"number","label":"Minimum comparable results","group":"Routing","defaultValue":12},
-    "targetPassPercent": {"type":"number","label":"Target verified pass rate (1–99%)","group":"Routing","defaultValue":80},
-    "headroomPercent": {"type":"number","label":"Context reserved for growth (%)","group":"Limits","defaultValue":20},
-    "executorOutputTokens": {"type":"number","label":"Reserved executor output tokens","group":"Limits","defaultValue":8192},
-    "paidRequestLimitUsd": {"type":"number","label":"Maximum estimated cost per paid request (USD)","group":"Limits","defaultValue":0}
+    "assessorModel": {
+      "type": "string",
+      "label": "Assessment model",
+      "group": "Assessment",
+      "defaultValue": "openai-codex/gpt-6.1-terra"
+    },
+    "assessmentInputChars": {
+      "type": "number",
+      "label": "Maximum task-data characters (not total tokens)",
+      "group": "Assessment",
+      "defaultValue": 12000
+    },
+    "assessmentOutputTokens": {
+      "type": "number",
+      "label": "Assessment output target (checked after generation)",
+      "group": "Assessment",
+      "defaultValue": 1200
+    },
+    "assessmentTimeoutSeconds": {
+      "type": "number",
+      "label": "Assessment timeout in seconds",
+      "group": "Assessment",
+      "defaultValue": 30
+    },
+    "guidance": {
+      "type": "string",
+      "label": "Assessment guidance",
+      "group": "Assessment",
+      "multiline": true,
+      "defaultValue": ""
+    },
+    "modelOrder": {
+      "type": "array",
+      "itemType": "string",
+      "label": "Executor preference order",
+      "group": "Routing",
+      "defaultValue": [
+        "terra",
+        "sol",
+        "flash"
+      ]
+    },
+    "baseline": {
+      "type": "string",
+      "label": "Baseline executor",
+      "group": "Routing",
+      "defaultValue": "terra"
+    },
+    "maxOutcomes": {
+      "type": "number",
+      "label": "Independent outcomes before proposing a split",
+      "group": "Routing",
+      "defaultValue": 2
+    },
+    "minSamples": {
+      "type": "number",
+      "label": "Minimum comparable results",
+      "group": "Scenario calibration",
+      "defaultValue": 12
+    },
+    "targetPassPercent": {
+      "type": "number",
+      "label": "Target verified pass rate (1\u201399%)",
+      "group": "Scenario calibration",
+      "defaultValue": 80
+    },
+    "headroomPercent": {
+      "type": "number",
+      "label": "Context reserved for growth (%)",
+      "group": "Limits",
+      "defaultValue": 20
+    },
+    "executorOutputTokens": {
+      "type": "number",
+      "label": "Reserved executor output tokens",
+      "group": "Limits",
+      "defaultValue": 8192
+    },
+    "paidRequestLimitUsd": {
+      "type": "number",
+      "label": "Paid executor request estimate ceiling (USD; preview only)",
+      "group": "Limits",
+      "defaultValue": 0
+    }
   }
 }

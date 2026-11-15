@@ -1,0 +1,54 @@
+{
+  "observedAt": "2026-11-15T14:18:31.806Z",
+  "environment": "Disposable local Fusion 0.77.0; engine disabled and paused",
+  "task": "Synthetic retry-counter investigation",
+  "assessor": "openai-codex/gpt-6.1-terra",
+  "assessment": {
+    "independentOutcomes": 2,
+    "capabilities": [
+      "review"
+    ],
+    "uncertainty": "medium",
+    "acceptanceCheck": "The response gives a plausible minimal cause for the retry counter reset and one test whose observed results distinguish an out-of-order database write from a stale display cache.",
+    "pitfalls": [
+      "Treating the hypothetical cause as established fact.",
+      "Proposing multiple tests or requiring code changes or infrastructure access."
+    ]
+  },
+  "usage": {
+    "input_tokens": 10945,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 91,
+    "reasoning_output_tokens": 0
+  },
+  "elapsedMs": 6368,
+  "settings": {
+    "assessorModel": "openai-codex/gpt-6.1-terra",
+    "assessmentInputChars": 12000,
+    "assessmentOutputTokens": 1200,
+    "assessmentTimeoutSeconds": 25,
+    "guidance": "Prefer one discriminating test.",
+    "modelOrder": [
+      "terra",
+      "sol",
+      "flash"
+    ],
+    "baseline": "terra",
+    "maxOutcomes": 2,
+    "minSamples": 12,
+    "targetPassPercent": 80,
+    "headroomPercent": 20,
+    "executorOutputTokens": 8192,
+    "paidRequestLimitUsd": 0
+  },
+  "suggestedModel": "terra",
+  "suggestionBasis": "configured_baseline; capability fit and executor admission unverified",
+  "fusionResolved": {
+    "provider": "openai-codex",
+    "modelId": "gpt-6.1-sol",
+    "source": "Native effective settings"
+  },
+  "executorSessionStarted": false,
+  "automaticSelection": false
+}

@@ -1,14 +1,14 @@
 # Roadmap: earn trust before dispatch authority
 
-## 0. Public exercise — current
+## 0. Public exercise — available
 
 Runnable scenarios, bounded assessment schema, advisory policy, local OTLP round trip, sanitized trial receipt, explicit product design, and independent Astra review. Publish limitations beside the product story. Automatic selection remains unavailable/off.
 
-## 1. One useful advisory task card
+## 1. One useful advisory task card — local implementation available
 
-Implement one explicit Assess task action using an admitted controller adapter. Enforce tools, deadline, input/output token and assessor budget bounds; bind persistence to task revision and policy/catalog versions. Display the short recommendation, uncertainty and useful next check; provide a source-stamped native resolution readback and session confirmation where supported. Add stale/unavailable states and a price/limits drawer.
+The disposable Fusion 0.77.0 card now provides explicit assessment, cancellation, task/settings binding, persisted receipts, native executor resolution, a fresh public price drawer, and project defaults with validation and discard/conflict recovery. [Verification and screenshots](ui-verification.md) document an actual call from the UI. Automatic selection remains off.
 
-Acceptance: in a disposable Fusion project, a user can assess, edit, reassess, inspect price provenance and continue the normal workflow while the plugin cannot alter native selection, approvals or task holds. Failures leave Fusion usable. Verify the session actually launched separately from its resolution.
+Remaining qualification: supported upstream dashboard registration; portable provider/account catalogs; provider-enforced token/spend limits; actual session acknowledgement; broader browser and human-user testing. The local CLI enforces time and input bounds but checks the output target after generation. It cannot prove executor access or model quality. Source publication is not production deployment.
 
 ## 2. Explain real waiting and interruptions
 

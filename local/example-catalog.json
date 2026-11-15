@@ -1,0 +1,35 @@
+[
+  {
+    "id": "terra",
+    "modelId": "gpt-6.1-terra",
+    "billing": "subscription",
+    "contextTokens": 500000,
+    "maxOutputTokens": 128000,
+    "limitsSource": "Example local configuration from the 2026-11-15 trial; not provider entitlement",
+    "prices": null,
+    "priceFresh": false,
+    "priceSource": "Subscription: incremental price unknown"
+  },
+  {
+    "id": "sol",
+    "modelId": "gpt-6.1-sol",
+    "billing": "subscription",
+    "contextTokens": 500000,
+    "maxOutputTokens": 16384,
+    "limitsSource": "Example local configuration from the 2026-11-15 trial; not provider entitlement",
+    "prices": null,
+    "priceFresh": false,
+    "priceSource": "Subscription: incremental price unknown"
+  },
+  {
+    "id": "flash",
+    "modelId": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "billing": "metered",
+    "contextTokens": 128000,
+    "maxOutputTokens": 16384,
+    "limitsSource": "Example local configuration from the 2026-11-15 trial; not provider entitlement",
+    "prices": null,
+    "priceFresh": false,
+    "priceSource": "https://deepinfra.com/deepseek-ai/DeepSeek-V4.1-Flash"
+  }
+]

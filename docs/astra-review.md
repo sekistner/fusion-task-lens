@@ -2,7 +2,7 @@
 
 Reviewed 2026-11-15 by **GPT-6 Astra**, explicitly requested by the project owner. This was an AI-assisted code and design review, not a human user study, security audit, vendor endorsement, or deployment approval. The review covered the operating contract, prototype architecture, all prototype source files, tests, and the local trial receipt.
 
-## Recommendation
+## Initial prototype recommendation (historical)
 
 Publish as an early community **design and policy prototype** after correcting the small implementation findings. Keep automatic selection unavailable. Current evidence does not qualify live task monitoring, installed UI, plugin-native assessment, or executor routing.
 
@@ -33,7 +33,7 @@ The initial 10 tests passed despite these gaps. The revised suite has 16 passing
 
 Astra highlighted the separation of assessment from execution authority, recommendation from actual model, CI queue from job execution, capacity problems from capability gaps, and unknown time from confirmed work. Conservative unknown-price handling, zero default paid-request allowance, bounded telemetry and explicit integration limitations support an honest prototype.
 
-## Remaining release boundaries
+## Initial release boundaries (historical)
 
 The public package has no live task hooks, native task card, integrated model adapter, durable event stream, automatic price/account refresh or automatic dispatch. Lifecycle work still needs attempt fencing, idempotency, waits/deadlines and explicit pause/cancel/failure semantics. Quality and savings claims require evaluation with comparable verified outcomes and assessor overhead included.
 
@@ -42,3 +42,24 @@ The public package has no live task hooks, native task card, integrated model ad
 Astra re-reviewed the corrections and public documentation and ran the standalone repository tests: **16 passed, 0 failed**. It confirmed that all five original findings were resolved within prototype scope and found no serious new regression. It judged the public claims accurate and the compact task-card design appropriate for Fusion, while retaining every release boundary above. Two final wording corrections clarify that tests exercise recommendations, not dispatch, and that commands run from this standalone repository.
 
 Verdict: suitable for public feedback as an early community prototype; not qualified for live monitoring, plugin-native assessment, automatic routing, usability or production deployment.
+
+## Working-card implementation and visual review — 2026-11-15
+
+Astra reviewed the actual local card, backend, assessor adapter, settings and install workflow, then re-reviewed the fixes and all three rendered screenshots. It judged the result suitable for publication as a **working disposable local preview**, with no remaining publication-blocking finding. This extends the initial prototype verdict above; it does not qualify a production rollout.
+
+| Finding | Implemented correction |
+| --- | --- |
+| Project defaults were exposed but ignored by the real call | Read and validate persisted native plugin settings; pass assessor, guidance, deadline and bounds into the adapter; show effective values in the card. |
+| Cancellation became unavailable after the engine was unpaused | Cancel by project/task/run identity without requiring the admission pause check. |
+| A slow poll could overwrite a newer action result | Fence requests by task generation, action epoch and read sequence. |
+| Assumed capability/admission facts overstated recommendation quality | Use explicitly conditional preference advice; show capability fit and executor access as unverified. |
+| Output-target failures discarded known token usage | Persist and display known failure usage and elapsed time. |
+| Installation depended on a private sibling catalog | Include a clearly labeled example catalog and standalone installer/launcher/registration files. |
+| Promotion data could outlive its discount | Refresh on promotion expiry, independently of normal cache age. |
+| Unsaved or conflicting defaults left users stuck | Add Discard / Reload saved defaults and a native settings recovery path. |
+
+Astra ran the corrected standalone tests: **25 passed, 0 failed**. It visually verified the Terra suggestion versus Sol native resolution, unchecked session, 25-second saved deadline, actual usage receipt, subscription uncertainty and local/provider limit distinction.
+
+Its final optional UI suggestions were also applied: the saved task text precedes the card, the card explains that assessment uses the local CLI while Fusion execution is paused, and model names are consistent in the baseline menu. The installer retains the native module filename; upgrading an already-open dashboard may require a cache-bypassing reload.
+
+Remaining boundaries: exact-version local dashboard patch, no hard provider generation-token cap, no account-quota probe, no verified capability history, no inspected executor session, no live lifecycle ingestion, no automatic selection, and no human usability study. The native plugin store provides no cross-writer compare-and-swap transaction. See [actual UI evidence](ui-verification.md).

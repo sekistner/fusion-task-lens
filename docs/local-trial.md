@@ -1,5 +1,7 @@
 # Disposable local trial, 2026-11-15
 
+This is the initial historical CLI trial. The newer [working-card verification](ui-verification.md) records assessment initiated inside Fusion, saved settings, and actual screenshots.
+
 This is a historical observation, not a reproducible end-to-end runner included in this package. The original private scratch harness and credentials are not published. The sanitized [JSON receipt](../examples/local-trial.json) preserves the original result labels and adds explanatory notes.
 
 Fusion 0.77.0 loaded the plugin and served six synthetic scenarios. A separate local Codex CLI adapter called the configured Terra assessor against a synthetic queue-service diagnosis. It requested schema-constrained output, disabled tools, enforced a wall-clock deadline, checked completion usage, and verified no tool events. Its requested model-output cap was not enforceable through that CLI; 106 output tokens were observed. The package's adapter interface still requires a controller that enforces output limits before live integration.

@@ -1,33 +1,28 @@
-<p align="center"><img src="assets/task-lens.svg" alt="Fusion Task Lens concept: recommendation, resolved model, and confirmed session shown separately" width="100%"></p>
-
 # Fusion Task Lens
 
-**Understand the task. See the recommendation. Know what actually ran.**
+**Understand the task. See the suggestion. Know what Fusion resolved.**
 
-Fusion gives agents a place to work. Task Lens explores how to make that work easier to understand: whether a task needs splitting, which model might fit, why work is waiting, and where time is being lost.
+A small assessment card inside Fusion's **Definition** tab. Ask a real assessor to examine the saved task, see its scope, uncertainty and pitfalls, inspect token prices and limits, and compare the configured model suggestion with Fusion's native executor resolution.
 
-**Community prototype · automatic selection unavailable/off · no production rollout**
+**Working local experiment · automatic selection unavailable/off · Fusion 0.77.0 only**
 
-This repository contains runnable policy helpers, six synthetic scenarios, an optional OTLP exporter, and a proposed Fusion user experience. It is an independent project, not an official Fusion feature. The image above is a concept illustration, not a screenshot of installed functionality.
+![Working assessment card inside Fusion](assets/screenshots/assessment-card.jpg)
 
-## Why this belongs beside a Fusion task
+*Actual disposable Fusion UI with a real assessor result. The engine-disabled banner is intentional: assessment is explicit, and native task execution is disabled.*
 
-A busy activity feed can tell you that things happened. The next useful question is **what should I do now?**
+## What improves the Fusion workflow
 
-| What the user sees | What Task Lens is designed to explain | Useful next step |
-| --- | --- | --- |
-| A task keeps growing | Too many independently verifiable outcomes | Review a proposed split |
-| A different model is recommended | Capability requirements, evidence coverage, limits and policy | Compare the recommendation with Fusion's resolved model |
-| CI is taking a long time | Queue delay versus job execution | Investigate runner slots or the job itself |
-| Work is blocked | A missing prerequisite or compatible worker | Resolve the specific dependency |
-| The agent repeats itself | Equivalent outcomes across attempts without new acceptance evidence | Choose one discriminating check |
-| Activity suddenly stops | Last confirmed heartbeat and an unknown interval | Check worker status before deciding whether to resume |
+- **A useful check before work starts.** The assessor identifies independently verifiable outcomes, uncertainty, an acceptance check and anticipated pitfalls. Large or uncertain tasks can prompt a split or discovery suggestion.
+- **Model facts kept separate.** The card shows a policy suggestion, native executor resolution, and whether a session has been checked. A recommendation is never silently applied.
+- **Prices with context.** Expand local context/output limits, public provider prices with timestamps, subscription uncertainty and measured assessor token usage.
+- **Small controls, accessible defaults.** An optional note and per-call assessor choice sit behind a disclosure. Project defaults persist in Fusion's plugin settings; advanced limits stay folded away.
+- **Honest operational insight.** Six synthetic lifecycle scenarios distinguish CI queue delays, slow jobs, missing capacity, repeated outcomes and lost liveness. Live lifecycle collection is still future work.
 
-These are product goals illustrated by synthetic scenarios. There is no measured productivity or cost improvement yet.
+There is no measured productivity, quality or cost improvement claim. The current model suggestion follows configured preferences and estimated limits; capability fit, executor authentication, quota and availability remain unverified. No historical outcome calibration is used by the live card.
 
-## Try the prototype
+## Try the code without model calls
 
-Requires Node.js 22.12 or newer. No API key, Fusion service, npm dependencies, or model call is needed.
+Node.js 22.12 or newer; no dependencies or credentials required for these commands:
 
 ```sh
 git clone https://github.com/sekistner/fusion-task-lens.git
@@ -36,75 +31,60 @@ npm test
 npm run demo
 ```
 
-The demo prints six scenario reports. `oversized` proposes decomposition; `slowCi` separates 30 minutes of queue time from 7 minutes of execution; `slowBuild` shows 2 minutes of queue time and 35 minutes of execution. `capacity`, `retry`, and `workerLost` cover missing capacity, repeated outcomes, and lost liveness.
+The tests cover policy, local routes, settings, cancellation, stale input and OTLP transport. The demo prints six synthetic scenario reports.
 
-## A small selector, with the details one click away
+## Try the real Fusion card
 
-The proposed task card has just five essentials:
+Follow the [disposable setup instructions](local/README.md). You need the pinned Fusion package, a private local PostgreSQL database and an already signed-in Codex CLI. A version-checked local dashboard patch mounts the card; this is not a generic drop-in dashboard plugin or a production release.
 
-- **Assess task** — an explicit action with a separate assessment model and budget.
-- **Recommendation + reason** — including “configured default; no comparable outcomes yet.”
-- **Fusion resolved / session confirmed** — separate facts, with “not started” when appropriate.
-- **Optional guidance** — a short free-text note, treated as task data.
-- **Prices & limits** — expandable context/output limits, billing, quota state, and price freshness.
+1. Open a task's **Definition** tab.
+2. Review **Project defaults**, or leave the defaults alone.
+3. Click **Assess task**. One real CLI call assesses saved text; unsaved editor text is excluded.
+4. Expand **Prices & limits** or **Why this suggestion**.
+5. Edit the task or change defaults: the old assessment becomes stale. Reassessment is explicit.
 
-Advanced defaults live in project settings. Assessment never starts execution or changes Fusion's native model settings. Advice to split or investigate remains advice; it does not create a workflow hold. [Read the process and UI design →](docs/user-experience.md)
+The package stays `private: true` to prevent accidental npm publication. No engine dispatch hook or automatic-selection switch exists.
 
-## What works today
+## Settings that actually work
+
+![Project defaults saved in Fusion](assets/screenshots/project-defaults.jpg)
+
+Default assessor, project guidance, task-data size, deadline and output target flow into the real assessor request. Baseline, fallback order, scope threshold, context headroom, output reserve and paid-request estimate ceiling control advisory calculations. The two historical calibration settings are explicitly **scenario-only** until verified outcomes exist.
+
+Save validates settings. Discard restores saved values. A detected external change offers **Reload saved defaults**. Editing settings does not change Fusion's native executor configuration. Conflict detection is optimistic; it is not a database transaction shared with Fusion's native settings editor.
+
+## Prices, limits and measured usage
+
+![Live price drawer and actual assessor usage](assets/screenshots/prices-and-limits.jpg)
+
+Public DeepInfra prices are fetched separately from task data. Local configured limits and provider-advertised context are distinct. Subscription cost/quota is unknown rather than zero. Discounts have freshness and expiry handling.
+
+The CLI enforces the configured wall-clock deadline. Its output-token target is checked **after generation**, because this adapter has no supported hard provider-side generation cap. A failed call may still consume tokens; known failure usage is retained. Task-data character limits do not cap total harness input tokens.
+
+## What is implemented
 
 | Capability | Status |
 | --- | --- |
-| Validated task assessment request/response helpers | Implemented; caller must supply an enforcing model adapter |
-| Advisory model eligibility and recommendation policy | Implemented and tested with fixtures |
-| Scope, waiting, retry and heartbeat scenarios | Six runnable synthetic examples |
-| OTLP/HTTP JSON traces containing bounded timing/enumeration fields | Local mock receiver tested; no live Fusion event subscription |
-| Fusion plugin `/scenarios` route | Loaded in one disposable Fusion 0.77.0 project |
-| Real model assessment | One separate local Codex CLI trial; receipt included |
-| Native Fusion model resolution comparison | Checked in that paused local trial; executor not launched |
-| Task card, live lifecycle data, task persistence adapter, catalog refresh | Proposed; not implemented |
-| Automatic model selection | Not implemented; remains off |
+| Task card inside native Definition | Working in the disposable, pinned Fusion installation |
+| Real structured assessor | Local signed-in Codex CLI, explicit call, cancellation and deadline |
+| Saved project defaults | Native plugin settings, validation, stale-result detection and conflict UI |
+| Task/setting change during inference | Result discarded; existing task/executor settings untouched |
+| Assessment persistence | Private sidecar files scoped by project, task and fingerprints |
+| Native model comparison | Read-only executor resolver; assigned-agent routes shown as unchecked |
+| Price/limit drawer | Public DeepInfra refresh, example local limits, actual assessor usage |
+| Lifecycle/OTLP helpers | Synthetic scenarios and local transport tests; no live event stream |
+| Session confirmation / automatic routing | Not implemented; card never launches an executor |
 
-The package remains `private: true` to prevent accidental npm publication. Public GitHub source does not imply a supported plugin release. Do not add it to a production runtime based on this exercise.
+## Review and evidence
 
-## The first real assessment
+GPT-6 Astra reviewed the concept, implementation and settings. The review led to settings wiring, clearer preference-only advice, cancellation fixes, request ordering, retained failed usage and portable installation files. See the [review and verification record](docs/astra-review.md).
 
-A synthetic retry-counter diagnosis task was assessed by `openai-codex/gpt-6.1-terra` through a separate local CLI harness. The assessor identified two outcomes, medium uncertainty, and the need for a test that distinguishes write ordering from a stale display.
+The [initial local trial](docs/local-trial.md) deliberately compared a Terra suggestion with a Sol native resolution while paused. Subsequent UI trials exercised the actual card. Screenshots show the local experiment, not a production deployment. See [UI acceptance evidence](docs/ui-verification.md).
 
-| Observation | Recorded result |
-| --- | --- |
-| Assessor elapsed time | 10.337 seconds |
-| Input / output tokens | 12,138 / 106 |
-| Recommendation | Terra, configured policy baseline, 0 comparable outcomes |
-| Fusion native resolver | Sol, from deliberately configured native settings |
-| Confirmed executor session | None — task paused, no executor launched |
-| Automatic selection | Off |
+## Design foundations and next steps
 
-The difference between recommendation and resolved model is intentional and useful: it demonstrates that observation did not take over dispatch. It does **not** demonstrate that Terra is better than Sol or that a Sol session authenticated successfully.
+The concept draws on [MetaCogAgent](https://arxiv.org/abs/2605.17292): task-capability assessment, delegation and feedback. This project adapts that idea to a Fusion user workflow; it does not reproduce the paper's benchmark results or claim calibrated model intelligence.
 
-The 12,000-character setting limits task-data characters, not total provider input tokens. The CLI adds input of its own. Catalog limits and prices in the receipt are historical local configuration, not current provider guarantees; subscription billing is not “free.” [Trial details and limits →](docs/local-trial.md)
+[Process and UI design](docs/user-experience.md) · [Architecture](docs/architecture.md) · [Roadmap](docs/roadmap.md) · [Contributing](CONTRIBUTING.md)
 
-## Design foundations
-
-The concept draws on [MetaCogAgent](https://arxiv.org/abs/2605.17292), which combines task-capability assessment, delegation, and feedback. Task Lens adapts that pattern to a Fusion operator workflow. It is not a reproduction of the paper or its benchmark results. A model's self-reported confidence is not treated as an observed success rate.
-
-```mermaid
-flowchart LR
-    A[Task and acceptance criteria] --> B[Bounded assessor]
-    B --> C[Validated assessment]
-    P[Policy, catalog and observed outcomes] --> D[Advisory recommendation]
-    C --> D
-    D --> U[Task card: compare and explain]
-    F[Fusion native dispatch] --> U
-    S[Confirmed executor session] --> U
-    E[Proposed lifecycle events] --> T[Time and dependency explanation]
-    T --> U
-    T -. optional .-> O[OTLP collector]
-```
-
-[Architecture and lifecycle →](docs/architecture.md) · [Astra review →](docs/astra-review.md) · [Roadmap →](docs/roadmap.md)
-
-## Help shape it
-
-The next useful feedback is from Fusion users: where would the card help you make a decision, which waits are hardest to explain, and what would make a recommendation trustworthy? Open an issue with a synthetic example. Keep task content, credentials, private infrastructure details, and account data out of public reports.
-
-MIT licensed. Fusion and model names belong to their respective owners; no affiliation or endorsement is implied.
+Independent community project, MIT licensed. Fusion and model names belong to their owners; no affiliation or endorsement is implied. Feedback from Fusion users is welcome through synthetic examples without private task content or credentials.
