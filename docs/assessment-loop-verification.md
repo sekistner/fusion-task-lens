@@ -26,3 +26,11 @@ The dashboard uses a versioned asset directory. Browser testing demonstrated why
 The machine check reads source identity, root cleanliness excluding submodule contents, base ancestry and recorded review identity. It does not run tests, inspect source contents, probe infrastructure, dispatch executors or advance workflow steps. Other evidence is operator-reported and unverified. There is no automatic retry or automatic model selection. Evidence history is not a complete execution audit or live OTLP event stream.
 
 Screenshots: [result](../assets/screenshots/assessment-loop.jpg), [settings](../assets/screenshots/assessment-settings.jpg), [prices](../assets/screenshots/assessment-prices.jpg). Deployment is recorded separately by the installation owner; these screenshots prove the disposable UI, not a production rollout.
+
+## Native managed-instance verification
+
+The same published backend and dashboard were subsequently deployed through the installation owner's image/Flux controls. A real manual assessment in the running instance requested source evidence; the bounded check observed a clean expected commit and matching full recorded review identity. The native Terra reassessment consumed that receipt, returned `discovery: none`, and explicitly left test execution, patch contents and delivery unverified. It used 5,763 input and 201 output tokens in 5.7 seconds.
+
+Astra inspected the live UI screenshot and found no visual or process blocker. All 329 existing tasks retained content, source bindings, models, workflow decisions and holds; native observation timestamps advanced normally. Automatic model selection stayed off and existing plugin settings were unchanged. Private task details and the live screenshot are not published here.
+
+Some legacy tasks already returned an unavailable native assessment context before this release. The new tab exposes the unavailable state; this release does not repair that existing context-resolution limitation.
