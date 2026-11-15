@@ -1,0 +1,25 @@
+{
+  "name": "fusion-plugin-task-observability",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./plugin.mjs"
+    }
+  },
+  "scripts": {
+    "test": "node --test policy.test.mjs",
+    "demo": "node examples/scenarios.mjs"
+  },
+  "description": "Task assessment, model recommendation, and lifecycle observability for Fusion \u2014 advisory prototype.",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sekistner/fusion-task-lens.git"
+  },
+  "homepage": "https://github.com/sekistner/fusion-task-lens#readme"
+}

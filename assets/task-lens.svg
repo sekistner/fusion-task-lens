@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+<title id="title">Fusion Task Lens — proposed task assessment card</title>
+<desc id="desc">Concept illustration. Advisory recommendation Terra, Fusion resolved Sol, session not started. Automatic selection off. Task scope and uncertainty are visible; prices, limits and explanation are expandable in the proposed interface.</desc>
+<defs><linearGradient id="bg" x2="1" y2="1"><stop stop-color="#111e36"/><stop offset="1" stop-color="#203d55"/></linearGradient></defs>
+<rect width="1200" height="760" rx="24" fill="url(#bg)"/>
+<g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+<text x="68" y="67" font-size="15" fill="#8fe0d0" letter-spacing="3">FUSION TASK LENS</text>
+<text x="68" y="124" font-size="40" font-weight="650" fill="#fff">Know why. Know what ran.</text>
+<text x="68" y="160" font-size="19" fill="#c1d2e1">Task assessment and model insight, beside the work.</text>
+<rect x="68" y="200" width="1064" height="450" rx="18" fill="#fff"/>
+<text x="100" y="245" font-size="22" font-weight="650" fill="#182b40">Task assessment</text>
+<rect x="795" y="222" width="305" height="34" rx="17" fill="#edf4f6"/>
+<text x="814" y="245" font-size="14" fill="#385568">Advisory · automatic selection off</text>
+<line x1="100" y1="277" x2="1100" y2="277" stroke="#e3e9ee"/>
+<text x="100" y="315" font-size="16" fill="#526778">Recommended</text>
+<text x="320" y="315" font-size="20" font-weight="650" fill="#076756">Terra</text>
+<text x="320" y="342" font-size="15" fill="#526778">Configured default · 0 comparable verified outcomes</text>
+<text x="100" y="382" font-size="16" fill="#526778">Fusion resolved</text>
+<text x="320" y="382" font-size="18" font-weight="600" fill="#182b40">Sol</text>
+<text x="370" y="382" font-size="15" fill="#526778">Native settings · checked separately</text>
+<text x="100" y="422" font-size="16" fill="#526778">Session confirmed</text>
+<text x="320" y="422" font-size="18" fill="#182b40">Not started</text>
+<line x1="100" y1="447" x2="1100" y2="447" stroke="#e3e9ee"/>
+<text x="100" y="482" font-size="16" fill="#182b40">Scope: 2 outcomes</text>
+<text x="320" y="482" font-size="16" fill="#182b40">Uncertainty: medium</text>
+<text x="100" y="519" font-size="15" fill="#526778">Next check: compare authoritative writes with the displayed retry counter.</text>
+<rect x="100" y="550" width="142" height="43" rx="8" fill="#076756"/>
+<text x="121" y="577" font-size="16" font-weight="600" fill="#fff">Assess task</text>
+<rect x="255" y="550" width="176" height="43" rx="8" fill="#f1f5f8"/>
+<text x="274" y="577" font-size="15" fill="#244259">Prices &amp; limits ▾</text>
+<rect x="444" y="550" width="249" height="43" rx="8" fill="#f1f5f8"/>
+<text x="463" y="577" font-size="15" fill="#244259">Why this recommendation ▾</text>
+<text x="100" y="625" font-size="14" fill="#526778">Optional guidance: “Prefer one discriminating test.”</text>
+<text x="68" y="696" font-size="14" font-weight="600" fill="#8fe0d0" letter-spacing="1">PROPOSED TASK CARD · NOT LIVE FUSION UI</text>
+<text x="68" y="725" font-size="14" fill="#c1d2e1">Runnable policy prototype · six scenarios · optional OTLP · no automatic routing</text>
+</g>
+</svg>

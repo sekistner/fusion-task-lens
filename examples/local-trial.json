@@ -1,0 +1,115 @@
+{
+  "project": "fusion-shadow",
+  "taskId": "KB-001",
+  "taskTitle": "Explain a stale retry counter in a synthetic queue service",
+  "fusionVersion": "0.77.0",
+  "resolverBundleSha256": "94caa77aee3c3a1ea1d6aa407a0883b8c1fe6139a7807401d5728bb13ffcf5e7",
+  "mode": "shadow",
+  "automaticSelection": false,
+  "enginePaused": true,
+  "executorLaunched": false,
+  "assessor": {
+    "assessor": "openai-codex/gpt-6.1-terra",
+    "assessment": {
+      "independentOutcomes": 2,
+      "capabilities": [
+        "review"
+      ],
+      "uncertainty": "medium",
+      "acceptanceCheck": "The response identifies a plausible shared-row write race and describes one test that compares authoritative row values and write ordering against the displayed counter after reconnect.",
+      "pitfalls": [
+        "Treating a plausible cause as established without evidence.",
+        "Proposing a test that cannot distinguish stale display data from an out-of-order database write.",
+        "Adding code changes or infrastructure actions to the synthetic plan."
+      ]
+    },
+    "usage": {
+      "input_tokens": 12138,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 106,
+      "reasoning_output_tokens": 0
+    },
+    "elapsedMs": 10337
+  },
+  "recommendation": {
+    "action": "route",
+    "reason": "native_baseline",
+    "model": "terra",
+    "samples": 0
+  },
+  "nativeExecutor": {
+    "provider": "openai-codex",
+    "modelId": "gpt-6.1-sol"
+  },
+  "candidates": [
+    {
+      "id": "terra",
+      "permitted": true,
+      "authenticated": true,
+      "funded": true,
+      "available": true,
+      "estimate": {
+        "eligible": true,
+        "reason": "subscription_quota",
+        "estimatedUsd": null
+      },
+      "prices": null,
+      "billing": "subscription",
+      "quota": "ready",
+      "priceSource": "Local trial catalog snapshot; not a current provider guarantee",
+      "contextTokens": 500000,
+      "maxOutputTokens": 128000,
+      "modelId": "gpt-6.1-terra"
+    },
+    {
+      "id": "sol",
+      "permitted": true,
+      "authenticated": false,
+      "funded": false,
+      "available": false,
+      "estimate": {
+        "eligible": false,
+        "reason": "subscription_quota",
+        "estimatedUsd": null
+      },
+      "prices": null,
+      "billing": "subscription",
+      "quota": "unknown",
+      "priceSource": "Local trial catalog snapshot; not a current provider guarantee",
+      "contextTokens": 500000,
+      "maxOutputTokens": 16384,
+      "modelId": "gpt-6.1-sol"
+    },
+    {
+      "id": "flash",
+      "permitted": false,
+      "authenticated": false,
+      "funded": false,
+      "available": false,
+      "estimate": {
+        "eligible": false,
+        "reason": "price_unknown",
+        "estimatedUsd": null
+      },
+      "prices": {
+        "input": 0.2,
+        "output": 0.6,
+        "cacheRead": 0.006,
+        "cacheWrite": 0.2
+      },
+      "billing": "metered",
+      "quota": "unknown",
+      "priceSource": "Local trial catalog snapshot; not a current provider guarantee",
+      "contextTokens": 128000,
+      "maxOutputTokens": 16384,
+      "modelId": "deepseek-ai/DeepSeek-V4.1-Flash"
+    }
+  ],
+  "receiptNotes": [
+    "Sanitized historical receipt from 2026-11-15. No executor session was launched.",
+    "native_baseline was the prototype label at trial time; corrected to configured_baseline after review.",
+    "Model limits were local configuration, not remotely verified provider limits.",
+    "Availability and account flags were trial inputs, not a general account or model discovery service."
+  ]
+}
