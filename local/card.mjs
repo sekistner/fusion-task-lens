@@ -1,9 +1,10 @@
 // Mounted by the version-checked disposable dashboard patch. Uses the host's
 // React instance and task props, never a DOM scraper or a second task board.
-export function TaskLensCard({ react: React, task, projectId }) {
+export function TaskLensCard({ react: React, task, projectId, authHeaders = x => x, hideUnavailable = false }) {
   const h = React.createElement;
   const [data, setData] = React.useState(null);
   const [error, setError] = React.useState('');
+  const [unavailable, setUnavailable] = React.useState(false);
   const [busy, setBusy] = React.useState('');
   const [note, setNote] = React.useState('');
   const [model, setModel] = React.useState('');
@@ -14,24 +15,24 @@ export function TaskLensCard({ react: React, task, projectId }) {
   const base = `/api/plugins/fusion-plugin-task-observability/tasks/${encodeURIComponent(task.id)}`;
   const request = async (action, body) => {
     const response = await fetch(`${base}/${action}?projectId=${encodeURIComponent(projectId ?? '')}`, {
-      method: body ? 'POST' : 'GET', headers: { 'Content-Type': 'application/json' },
+      method: body ? 'POST' : 'GET', headers: authHeaders({ 'Content-Type': 'application/json' }),
       ...(body ? { body: JSON.stringify({ ...body, projectId, automaticSelection: false }) } : {}),
     });
     const result = await response.json();
-    if (!response.ok) throw Object.assign(new Error(result.error || 'Assessment unavailable'), { failure: result.failure });
+    if (!response.ok) throw Object.assign(new Error(result.error || 'Assessment unavailable'), { failure: result.failure, status: response.status });
     return result;
   };
   React.useEffect(() => {
     const gen = ++generation.current;
-    setData(null); setError(''); setNote(''); setBusy(''); setModel(''); setDraft(null); setDirty(false);
+    setData(null); setUnavailable(false); setError(''); setNote(''); setBusy(''); setModel(''); setDraft(null); setDirty(false);
     activeAction.current = false;
     let readSequence = 0, acceptedSequence = 0;
     const load = () => {
       if (activeAction.current) return;
       const boundary = epoch.current, seq = ++readSequence;
       request('assessment').then(result => {
-        if (generation.current === gen && boundary === epoch.current && seq >= acceptedSequence) { acceptedSequence = seq; setData(result); }
-      }).catch(e => { if (generation.current === gen && boundary === epoch.current && seq >= acceptedSequence) setError(e.message); });
+        if (generation.current === gen && boundary === epoch.current && seq >= acceptedSequence) { acceptedSequence = seq; setUnavailable(false); setData(result); }
+      }).catch(e => { if (generation.current === gen && boundary === epoch.current && seq >= acceptedSequence) { setError(e.message); setUnavailable(e.status === 404 || e.status === 403); } });
     };
     load(); const timer = setInterval(load, 5000);
     return () => { generation.current++; clearInterval(timer); };
@@ -76,21 +77,22 @@ export function TaskLensCard({ react: React, task, projectId }) {
   const row = (title, value, detail) => h('div', { className: 'tl-row', key: title }, h('span', { className: 'tl-label' }, title), h('div', null, h('strong', null, value), detail && h('small', null, detail)));
   const recommendation = !result ? 'Assess to see a suggestion' : route?.model ? pretty(route.model) : ({ decompose: 'Consider splitting the task', discovery: 'Run a small discovery check', block: 'Review prerequisites or constraints' }[route?.action] || 'Unavailable');
   const explanation = route?.reason === 'configured_baseline' ? 'Configured default · no comparable verified outcomes yet' : route?.reason === 'configured_preference' ? 'Configured preference order within estimated limits' : route?.reason?.replaceAll('_', ' ');
+  if (hideUnavailable && ((!data && !error) || unavailable)) return null;
   return h('section', { className: 'task-lens', 'aria-label': 'Task assessment', 'data-testid': 'task-lens-card' },
     h('style', null, styles),
-    h('header', { className: 'tl-head' }, h('div', null, h('h3', null, 'Task assessment'), h('small', null, 'Local Codex assessor · advisory preview')), h('span', { className: 'tl-badge' }, 'Automatic selection off')),
+    h('header', { className: 'tl-head' }, h('div', null, h('h3', null, 'Task assessment'), h('small', null, (data?.assessorRuntime || 'Task assessor') + ' · manual advisory preview')), h('span', { className: 'tl-badge' }, 'Automatic selection off')),
     h('div', { className: 'tl-live', role: 'status', 'aria-live': 'polite' }, processing ? 'Assessing with ' + pretty(activeModel) + '… one call, up to ' + config?.assessmentTimeoutSeconds + ' seconds.' : data?.stale ? 'Out of date — ' + data.staleReasons.join('; ') + '. Reassess before using this advice.' : result ? 'Assessed ' + new Date(result.assessedAt).toLocaleTimeString() + ' · ' + pretty(result.model) : 'Assess the saved task without starting execution.'),
     error && h('div', { className: 'tl-error', role: 'alert' }, error),
     data?.lastFailure && (!result || data.lastFailure.failedAt > result.assessedAt) && h('p', { className: 'tl-footnote' }, 'Last attempt: ', data.lastFailure.message, ' Usage: ', data.lastFailure.usage ? num(data.lastFailure.usage.input_tokens) + ' input / ' + num(data.lastFailure.usage.output_tokens) + ' output tokens (already incurred).' : 'unknown; it may have consumed tokens.'),
     h('div', { className: data?.stale ? 'tl-stale' : '' },
       row('Policy suggestion', recommendation, [explanation, 'Capability fit and executor access unverified.'].filter(Boolean).join(' · ')),
       row('Fusion resolved', pretty(data?.resolved?.modelId), data?.resolved ? 'Executor · ' + data.resolved.source + ' · checked ' + new Date(data.resolved.checkedAt).toLocaleTimeString() : 'Native model resolution is not available for this task.'),
-      row('Session confirmed', 'Not checked', data?.enginePaused ? 'Assessment uses your local Codex CLI. Fusion’s paused engine affects execution only.' : 'This card does not inspect or launch executor sessions.')),
+      row('Session confirmed', 'Not checked', 'Manual assessment uses a separate session. It never pauses, holds or starts task execution.')),
     result && h('div', { className: 'tl-assessment' },
       h('div', { className: 'tl-tags' }, h('span', null, result.assessment.independentOutcomes + ' outcomes'), h('span', null, result.assessment.uncertainty + ' uncertainty')),
       h('p', null, h('strong', null, 'Acceptance check: '), result.assessment.acceptanceCheck)),
     h('div', { className: 'tl-actions' },
-      h('button', { type: 'button', className: 'btn btn-sm tl-primary', disabled: !data || !!busy || processing || !data.enginePaused || dirty, onClick: () => action('assess') }, processing ? 'Assessing…' : result ? 'Reassess task' : 'Assess task'),
+      h('button', { type: 'button', className: 'btn btn-sm tl-primary', disabled: !data || !!busy || processing || !data.assessmentAllowed || dirty, onClick: () => action('assess') }, processing ? 'Assessing…' : result ? 'Reassess task' : 'Assess task'),
       processing && h('button', { type: 'button', className: 'btn btn-sm', onClick: () => action('cancel') }, 'Cancel assessment'),
       h('span', { className: 'tl-footnote' }, dirty ? 'Save or discard project-default changes before assessing.' : 'One subscription call · no native executor changes')),
     h('details', null, h('summary', null, 'Guidance & assessor'),
@@ -109,7 +111,7 @@ export function TaskLensCard({ react: React, task, projectId }) {
           h('td', null, m.priceSource?.startsWith('https://') ? h('a', { href: m.priceSource, target: '_blank', rel: 'noreferrer' }, 'Provider source ↗') : 'Local runtime catalog',
             h('small', null, m.billing === 'subscription' ? 'Configured limits; provider entitlement unverified' : m.priceAsOf ? (m.priceFresh ? 'Fetched ' : 'Stale / lookup failed · ') + new Date(m.priceAsOf).toLocaleString() : 'Not fetched'))))))),
       h('button', { type: 'button', className: 'btn btn-sm', disabled: !!busy || processing, onClick: () => action('prices') }, busy === 'prices' ? 'Refreshing…' : 'Refresh provider prices'),
-      h('p', { className: 'tl-footnote' }, 'Assessment: ' + num(config?.assessmentInputChars) + ' task-data characters; ' + config?.assessmentTimeoutSeconds + '-second enforced deadline; ' + num(config?.assessmentOutputTokens) + ' output-token target checked after generation (not a hard provider cap). Harness input adds tokens.'),
+      h('p', { className: 'tl-footnote' }, 'Assessment: ' + num(config?.assessmentInputChars) + ' task-data characters; ' + config?.assessmentTimeoutSeconds + '-second request deadline; ' + num(config?.assessmentOutputTokens) + ' output-token target checked after generation (not a hard provider cap). Harness input adds tokens.'),
       h('p', { className: 'tl-footnote' }, 'Executor preview: ' + config?.headroomPercent + '% context headroom, ' + num(config?.executorOutputTokens) + ' output tokens reserved, $' + config?.paidRequestLimitUsd + ' paid-request estimate ceiling. No paid executor is invoked. These are estimates, not whole-task spend limits.'),
       result && h('p', null, 'Last assessment: ', h('strong', null, num(result.usage.input_tokens) + ' input / ' + num(result.usage.output_tokens) + ' output tokens'), ' · ' + (result.elapsedMs / 1000).toFixed(1) + ' seconds.')),
     data && h(ProjectDefaults, { react: React, draft, setDraft, dirty, setDirty, busy: !!busy || processing, save: () => action('settings'), conflict: dirty && draftRevision !== data.settingsRevision, discard: () => { setDraft({ ...data.settings }); setDraftRevision(data.settingsRevision); setDirty(false); setError(''); } }),

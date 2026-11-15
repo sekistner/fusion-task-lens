@@ -63,3 +63,9 @@ Astra ran the corrected standalone tests: **25 passed, 0 failed**. It visually v
 Its final optional UI suggestions were also applied: the saved task text precedes the card, the card explains that assessment uses the local CLI while Fusion execution is paused, and model names are consistent in the baseline menu. The installer retains the native module filename; upgrading an already-open dashboard may require a cache-bypassing reload.
 
 Remaining boundaries: exact-version local dashboard patch, no hard provider generation-token cap, no account-quota probe, no verified capability history, no inspected executor session, no live lifecycle ingestion, no automatic selection, and no human usability study. The native plugin store provides no cross-writer compare-and-swap transaction. See [actual UI evidence](ui-verification.md).
+
+## Native manual adapter review
+
+Astra reviewed the native factory adapter, live-mode routes and runtime image integration. It identified two issues before image rollout: a stalled factory/provider could outlive the request deadline indefinitely, and the card hid actionable first-load errors. Both were fixed and regression-tested. Admission remains closed while a timed-out provider session is still settling; initial authentication, configuration and server errors remain visible. The image passes the existing native authentication helper to the card and verifies unchanged server bytes. Completion-time model identity is also checked. The suite now contains 33 tests.
+
+This is manual advice while the engine is running, not a dispatch hook. The request deadline requests cancellation; it cannot promise exact remote billing termination. Shared account quota is still consumed.

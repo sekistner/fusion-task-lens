@@ -4,7 +4,7 @@
 
 A small assessment card inside Fusion's **Definition** tab. Ask a real assessor to examine the saved task, see its scope, uncertainty and pitfalls, inspect token prices and limits, and compare the configured model suggestion with Fusion's native executor resolution.
 
-**Working local experiment · automatic selection unavailable/off · Fusion 0.77.0 only**
+**Manual assessment · automatic selection unavailable/off · Fusion 0.77.0 only**
 
 ![Working assessment card inside Fusion](assets/screenshots/assessment-card.jpg)
 
@@ -34,6 +34,9 @@ npm run demo
 The tests cover policy, local routes, settings, cancellation, stale input and OTLP transport. The demo prints six synthetic scenario reports.
 
 ## Try the real Fusion card
+
+For an existing running instance, the [native adapter](live/README.md) uses Fusion’s signed-in AI session without requiring the task engine to pause. Its inline card still requires a reviewed dashboard image update.
+
 
 Follow the [disposable setup instructions](local/README.md). You need the pinned Fusion package, a private local PostgreSQL database and an already signed-in Codex CLI. A version-checked local dashboard patch mounts the card; this is not a generic drop-in dashboard plugin or a production release.
 

@@ -7,14 +7,14 @@ import { createLocalRoutes, revisionFor } from './service.mjs';
 import { effectiveConfig, fingerprint } from './settings.mjs';
 import { parseDeepInfra } from './catalog.mjs';
 const valid = { independentOutcomes: 1, capabilities: ['review'], uncertainty: 'medium', acceptanceCheck: 'Compare authoritative values against the displayed value.', pitfalls: [] };
-async function fixture(t, run) {
+async function fixture(t, run, options = {}) {
   const root = await mkdtemp(join(tmpdir(), 'task-lens-test-')); t.after(() => rm(root, { recursive: true, force: true }));
   const task = { id: 'KB-001', title: 'Synthetic review', description: 'Describe a discriminating test.', column: 'todo' };
   const settings = { enginePaused: true, executionGlobalModelId: 'sol' };
   let calls = 0; const pluginSettings = { ...effectiveConfig() };
   const host = { resolveEffectiveSettingsDetailed: async () => ({}), applyWorkflowSettingsOverlay: base => base,
     resolveExecutorSessionModel: () => ({ provider: 'openai-codex', modelId: 'gpt-6.1-sol' }) };
-  const routes = createLocalRoutes({ root, project: 'demo', nativeHost: host,
+  const routes = createLocalRoutes({ ...options, root, project: 'demo', nativeHost: host,
     getCatalog: async () => [{ id: 'terra', billing: 'subscription', contextTokens: 500000, maxOutputTokens: 128000 }],
     run: async (...args) => { calls++; return run ? run(...args) : { text: JSON.stringify(valid), usage: { input_tokens: 100, output_tokens: 50 }, elapsedMs: 50 }; } });
   const ctx = { taskStore: { getTask: async () => ({ ...task }), getSettingsFast: async () => ({ ...settings }), getPluginStore: () => ({ getPlugin: async () => ({ settings: { ...pluginSettings } }), updatePluginSettings: async (_id, next) => Object.assign(pluginSettings, next) }) } };
@@ -109,4 +109,16 @@ test('promotion expiry does not leave an expired discount marked fresh', () => {
   const data = [{ model_name: 'deepseek-ai/DeepSeek-V4.1-Flash', max_tokens: 1048576, pricing: { type: 'tokens', cents_per_input_token: .00002, cents_per_output_token: .00006, rate_per_input_token_cached: .03, discount: .3, discount_ends_at: '2026-11-15T12:00:00Z' } }];
   assert.equal(parseDeepInfra(data, '2026-11-15T11:59:59Z').promotionExpiresAt, '2026-11-15T12:00:00Z');
   const after = parseDeepInfra(data, '2026-11-15T12:00:01Z'); assert.equal(after.prices.input, .2); assert.equal(after.promotionExpiresAt, null);
+});
+
+test('manual native assessment never requires or changes the running engine state', async t => {
+  const f = await fixture(t, undefined, { manual: true });
+  f.settings.enginePaused = false;
+  const before = JSON.stringify([f.task, f.settings]);
+  const result = await f.request('assess');
+  assert.equal(result.assessmentAllowed, true);
+  assert.equal(result.assessorRuntime, 'Fusion native AI');
+  assert.equal(result.result.assessment.independentOutcomes, 1);
+  assert.equal(JSON.stringify([f.task, f.settings]), before);
+  assert.equal((await f.request('assess', { automaticSelection: true })).status, 400);
 });

@@ -9,19 +9,19 @@ import { catalogSnapshot } from './catalog.mjs';
 import { effectiveConfig, fingerprint, preferenceAdvice, pluginId } from './settings.mjs';
 export const revisionFor = task => fingerprint([task.id, task.title, task.description, task.prompt, task.column, task.modelProvider, task.modelId, task.executionMode, task.assignedAgentId]);
 const fail = (status, message) => Object.assign(new Error(message), { status });
-export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_ROOT, project = process.env.FUSION_TASK_LENS_PROJECT_ID, run = runCodexAssessment, nativeHost, getCatalog = catalogSnapshot } = {}) {
+export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_ROOT, project = process.env.FUSION_TASK_LENS_PROJECT_ID, run = runCodexAssessment, nativeHost, nativeModule, manual = false, origin = 'http://127.0.0.1:55482', getCatalog = catalogSnapshot } = {}) {
   if (!root || !project) return [];
   const running = new Map(); let nativePromise, savingSettings = false;
-  const native = () => nativeHost ? Promise.resolve(nativeHost) : nativePromise ??= import(pathToFileURL(join(root, 'install/node_modules/@runfusion/fusion/dist/task-lens-native.mjs')).href);
+  const native = () => nativeHost ? Promise.resolve(nativeHost) : nativePromise ??= import(pathToFileURL(nativeModule || join(root, 'install/node_modules/@runfusion/fusion/dist/task-lens-native.mjs')).href);
   async function context(req, ctx, { requirePause = false, readConfig = true } = {}) {
-    if (req.headers?.host !== '127.0.0.1:55482' || (req.headers.origin && req.headers.origin !== 'http://127.0.0.1:55482')) throw fail(403, 'Local Fusion origin required');
-    if ((req.query?.projectId ?? req.body?.projectId) !== project || (req.body?.projectId && req.body.projectId !== project)) throw fail(403, 'Disposable project only');
+    if ((!manual && req.headers?.host !== new URL(origin).host) || (req.headers?.origin && req.headers.origin !== origin)) throw fail(403, 'Fusion origin does not match this installation');
+    if ((req.query?.projectId ?? req.body?.projectId) !== project || (req.body?.projectId && req.body.projectId !== project)) throw fail(403, 'Project is not enabled for assessment');
     const id = req.params.id;
     if (!/^[A-Z0-9-]{1,50}$/.test(id)) throw fail(400, 'Invalid task identifier');
     const task = await ctx.taskStore.getTask(id);
     const host = await native();
     const settings = host.applyWorkflowSettingsOverlay(await ctx.taskStore.getSettingsFast(), await host.resolveEffectiveSettingsDetailed(ctx.taskStore, { id }));
-    if (requirePause && settings.enginePaused !== true) throw fail(409, 'Pause the disposable Fusion engine before assessing.');
+    if (requirePause && !manual && settings.enginePaused !== true) throw fail(409, 'Pause the disposable Fusion engine before assessing.');
     let config;
     if (readConfig) {
       const stored = (await ctx.taskStore.getPluginStore().getPlugin(pluginId)).settings;
@@ -50,7 +50,7 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
     const decision = result ? preferenceAdvice(result.assessment, models, inputTokens, config) : null;
     const resolved = task.assignedAgentId ? null : host.resolveExecutorSessionModel(task.modelProvider, task.modelId, settings, undefined, task.credentialInstanceId, task.executionMode);
     const job = running.get(task.id);
-    return { automaticSelection: false, enginePaused: settings.enginePaused === true, task: { id: task.id, title: task.title, revision }, result, lastFailure,
+    return { automaticSelection: false, assessmentAllowed: manual || settings.enginePaused === true, assessorRuntime: manual ? 'Fusion native AI' : 'Local Codex CLI', enginePaused: settings.enginePaused === true, task: { id: task.id, title: task.title, revision }, result, lastFailure,
       stale: staleReasons.length > 0, staleReasons, running: job ? { id: job.id, model: job.model, startedAt: job.startedAt } : null,
       recommendation: decision, catalog: models, settingsRevision,
       resolved: resolved ? { ...resolved, checkedAt: new Date().toISOString(), source: task.modelId ? 'Task override' : 'Native effective settings' } : null,
@@ -108,7 +108,7 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
       let receipt;
       try {
         const assessment = await assessWithModel(async request => {
-          receipt = await run(request, root, controller.signal); return receipt.text;
+          receipt = await run(request, root, controller.signal, ctx); return receipt.text;
         }, { ...config, assessorModel: model }, JSON.stringify({ title: task.title, description: task.description, prompt: task.prompt }), note);
         const check = async () => {
           const current = await context(req, ctx, { requirePause: true });
@@ -116,9 +116,9 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
           if (controller.signal.aborted) throw fail(409, 'Assessment cancelled. Native settings are unchanged.');
         };
         await check();
-        await persist(task.id, { assessment, model, usage: receipt.usage, elapsedMs: receipt.elapsedMs, revision, settingsRevision, config, runId: id, note, assessedAt: new Date().toISOString() }, '', check);
+        await persist(task.id, { assessment, model, completedModel: receipt.completedModel ?? null, usage: receipt.usage, elapsedMs: receipt.elapsedMs, revision, settingsRevision, config, runId: id, note, assessedAt: new Date().toISOString() }, '', check);
       } catch (error) {
-        const known = ['Assessment cancelled', 'Assessment timed out', 'Assessment input exceeds limit', 'Assessment exceeded its output target; usage was already incurred.'];
+        const known = ['Previous native assessor is still stopping; no new call was started.', 'Assessment cancelled', 'Assessment timed out', 'Assessment input exceeds limit', 'Assessment exceeded its output target; usage was already incurred.'];
         const failure = { message: error.status || known.includes(error.message) ? error.message : 'Assessor failed or returned invalid output. Check local sign-in/quota; native settings are unchanged.',
           usage: error.receipt?.usage ?? receipt?.usage ?? null, elapsedMs: error.receipt?.elapsedMs ?? receipt?.elapsedMs ?? null, model, failedAt: new Date().toISOString() };
         await persist(task.id, failure, '-failure');
