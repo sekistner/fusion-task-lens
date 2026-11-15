@@ -37,3 +37,7 @@ The drawer shows actual assessor usage, the enforced deadline and the post-gener
 The standalone suite covers project/task/settings binding, immutable native task/model settings, invalid origins and automatic-selection requests, stale task/settings completion, duplicate calls, cancellation after unpausing, settings propagation, failure usage receipts, price-unit conversion and promotion expiry, plus the synthetic lifecycle and policy cases. See CI for the published revision's result.
 
 Astra's implementation and visual review is recorded in [the review log](astra-review.md). Browser checks are manual agent-operated checks, not an automated browser suite. This exercise does not establish model quality, cost savings, confirmed executor access, live lifecycle telemetry or production readiness.
+
+## Current Assessment tab
+
+The new dedicated tab supersedes the inline Definition card. See [the real discovery/reassessment UI verification](assessment-loop-verification.md) for actual positive and unavailable evidence paths, native navigation and saved/discarded settings checks. Earlier screenshots and receipts above remain historical.

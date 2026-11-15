@@ -1,12 +1,12 @@
 # Fusion Task Lens
 
-**Understand the task. See the suggestion. Know what Fusion resolved.**
+**Assess → collect evidence → reassess. Decide what happens next.**
 
-A small assessment card inside Fusion's **Definition** tab. Ask a real assessor to examine the saved task, see its scope, uncertainty and pitfalls, inspect token prices and limits, and compare the configured model suggestion with Fusion's native executor resolution.
+A dedicated **Assessment** tab in Fusion. A real assessor explains the task, proposes the next decision, and can request a bounded source check. The check saves an evidence receipt and passes it into one new assessment. Results, evidence, next actions and model advice stay together; settings have a separate view.
 
 **Manual assessment · automatic selection unavailable/off · Fusion 0.77.0 only**
 
-![Working assessment card inside Fusion](assets/screenshots/assessment-card.jpg)
+![Working assessment card inside Fusion](assets/screenshots/assessment-loop.jpg)
 
 *Actual disposable Fusion UI with a real assessor result. The engine-disabled banner is intentional: assessment is explicit, and native task execution is disabled.*
 
@@ -35,22 +35,26 @@ The tests cover policy, local routes, settings, cancellation, stale input and OT
 
 ## Try the real Fusion card
 
-For an existing running instance, the [native adapter](live/README.md) uses Fusion’s signed-in AI session without requiring the task engine to pause. Its inline card still requires a reviewed dashboard image update.
+For an existing running instance, the [native adapter](live/README.md) uses Fusion’s signed-in AI session without requiring the task engine to pause. The Assessment tab still requires a reviewed dashboard image update.
 
 
 Follow the [disposable setup instructions](local/README.md). You need the pinned Fusion package, a private local PostgreSQL database and an already signed-in Codex CLI. A version-checked local dashboard patch mounts the card; this is not a generic drop-in dashboard plugin or a production release.
 
-1. Open a task's **Definition** tab.
-2. Review **Project defaults**, or leave the defaults alone.
-3. Click **Assess task**. One real CLI call assesses saved text; unsaved editor text is excluded.
-4. Expand **Prices & limits** or **Why this suggestion**.
-5. Edit the task or change defaults: the old assessment becomes stale. Reassessment is explicit.
+1. Open a task’s **Assessment** tab, beside Definition.
+2. Click **Assess task**. One real assessor call reads saved text and labels what remains unknown.
+3. If it requests supported source evidence, click **Check source & reassess**. This performs one fixed read-only check, saves the receipt, then calls the assessor once with that evidence.
+4. Read the updated conclusion, **What changed**, **Next action**, and **Evidence used**. Other evidence can be added as explicitly unverified operator reports.
+5. Open **Assessment settings** for project defaults. Native **Model** and **Workflow** remain the places to change execution decisions.
+
+The supported check observes bound Git checkout identity, root cleanliness (excluding submodules), base ancestry and recorded review identity. It does not execute tests, inspect file contents, probe services or dispatch agents. Missing/negative evidence is retained and can lead to a different next action. Reassessment failure preserves evidence for reuse without collecting it again. Source drift invalidates advice; no retry loop runs automatically.
+
+Discovery is bounded to two attempts per task definition/source scope by default. Review-result changes alone do not replenish that budget. Each attempt shares a 10-second source collection/validation budget; the separately configured assessor deadline and post-generation output target still apply.
 
 The package stays `private: true` to prevent accidental npm publication. No engine dispatch hook or automatic-selection switch exists.
 
 ## Settings that actually work
 
-![Project defaults saved in Fusion](assets/screenshots/project-defaults.jpg)
+![Project defaults saved in Fusion](assets/screenshots/assessment-settings.jpg)
 
 Default assessor, project guidance, task-data size, deadline and output target flow into the real assessor request. Baseline, fallback order, scope threshold, context headroom, output reserve and paid-request estimate ceiling control advisory calculations. The two historical calibration settings are explicitly **scenario-only** until verified outcomes exist.
 
@@ -58,7 +62,7 @@ Save validates settings. Discard restores saved values. A detected external chan
 
 ## Prices, limits and measured usage
 
-![Live price drawer and actual assessor usage](assets/screenshots/prices-and-limits.jpg)
+![Live price drawer and actual assessor usage](assets/screenshots/assessment-prices.jpg)
 
 Public DeepInfra prices are fetched separately from task data. Local configured limits and provider-advertised context are distinct. Subscription cost/quota is unknown rather than zero. Discounts have freshness and expiry handling.
 
@@ -68,11 +72,12 @@ The CLI enforces the configured wall-clock deadline. Its output-token target is 
 
 | Capability | Status |
 | --- | --- |
-| Task card inside native Definition | Working in the disposable, pinned Fusion installation |
+| Dedicated Assessment tab | Native task navigation, compact Definition link, result-first layout |
+| Discovery → evidence → reassessment | Fixed source/review check, immutable receipts, one explicit reassessment |
 | Real structured assessor | Local signed-in Codex CLI, explicit call, cancellation and deadline |
 | Saved project defaults | Native plugin settings, validation, stale-result detection and conflict UI |
-| Task/setting change during inference | Result discarded; existing task/executor settings untouched |
-| Assessment persistence | Private sidecar files scoped by project, task and fingerprints |
+| Task/source/setting change during inference | Outcome retained as invalidated history; current advice is not replaced |
+| Assessment persistence | Private atomic journal, durable operation IDs, historical status and evidence provenance |
 | Native model comparison | Read-only executor resolver; assigned-agent routes shown as unchecked |
 | Price/limit drawer | Public DeepInfra refresh, example local limits, actual assessor usage |
 | Lifecycle/OTLP helpers | Synthetic scenarios and local transport tests; no live event stream |
@@ -82,7 +87,7 @@ The CLI enforces the configured wall-clock deadline. Its output-token target is 
 
 GPT-6 Astra reviewed the concept, implementation and settings. The review led to settings wiring, clearer preference-only advice, cancellation fixes, request ordering, retained failed usage and portable installation files. See the [review and verification record](docs/astra-review.md).
 
-The [initial local trial](docs/local-trial.md) deliberately compared a Terra suggestion with a Sol native resolution while paused. Subsequent UI trials exercised the actual card. Screenshots show the local experiment, not a production deployment. See [UI acceptance evidence](docs/ui-verification.md).
+The [initial local trial](docs/local-trial.md) deliberately compared a Terra suggestion with a Sol native resolution while paused. Subsequent UI trials exercised the actual card. Screenshots show the local experiment, not a production deployment. See [current loop and UI acceptance evidence](docs/assessment-loop-verification.md).
 
 ## Design foundations and next steps
 

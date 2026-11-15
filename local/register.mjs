@@ -6,4 +6,4 @@ const endpoint = 'http://127.0.0.1:55482/api/plugins?projectId=' + encodeURIComp
 const response = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mode: 'install', path, aiScanOnLoad: false }) });
 const result = await response.json();
 if (!response.ok) throw new Error(result.error || 'Plugin registration failed');
-console.log('Registered the standalone local plugin. Refresh Fusion and open a task’s Definition tab.');
+console.log('Registered the standalone local plugin. Refresh Fusion and open a task’s Assessment tab.');

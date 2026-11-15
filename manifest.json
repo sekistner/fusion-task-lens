@@ -1,10 +1,13 @@
 {
   "id": "fusion-plugin-task-observability",
   "name": "Fusion Task Lens",
-  "version": "0.2.0",
-  "description": "Advisory task assessment, local task card and synthetic lifecycle scenarios. Automatic selection is unavailable.",
+  "version": "0.3.0",
+  "description": "Task assessment with bounded source/review discovery, evidence and reassessment. Automatic model selection is unavailable.",
   "fusionVersion": ">=0.77.0",
   "settingsSchema": {
+    "maxDiscoveryChecks": {
+      "type": "number", "label": "Source checks per task revision", "group": "Discovery", "defaultValue": 2
+    },
     "assessorModel": {
       "type": "string",
       "label": "Assessment model",

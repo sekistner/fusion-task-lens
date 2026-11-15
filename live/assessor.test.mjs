@@ -40,6 +40,8 @@ test('deadline returns while stalled factory is quarantined; late session is dis
  const promise=runNativeAssessment({...request,timeoutMs:20},f.root,new AbortController().signal,f.ctx);
  await assert.rejects(promise,/timed out/);
  await assert.rejects(runNativeAssessment(request,f.root,new AbortController().signal,f.ctx),/still stopping/);
+ const reloaded = await import('./assessor.mjs?reload=' + Date.now());
+ await assert.rejects(reloaded.runNativeAssessment(request,f.root,new AbortController().signal,f.ctx),/still stopping/);
  finish({session:f.session});
  while(!f.counts().disposed)await new Promise(resolve=>setImmediate(resolve));
  assert.equal(f.counts().prompts,0);

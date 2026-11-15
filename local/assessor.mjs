@@ -5,8 +5,10 @@ import { join } from 'node:path';
 
 export const schema = {
   type: 'object', additionalProperties: false,
-  required: ['independentOutcomes', 'capabilities', 'uncertainty', 'acceptanceCheck', 'pitfalls'],
+  required: ['independentOutcomes', 'capabilities', 'uncertainty', 'acceptanceCheck', 'pitfalls', 'conclusion', 'nextStep', 'evidenceQuestion', 'changed', 'discovery'],
   properties: {
+    conclusion: { type: 'string' }, nextStep: { type: 'string' }, evidenceQuestion: { type: 'string' }, changed: { type: 'string' },
+    discovery: { type: 'string', enum: ['source_review', 'operator_evidence', 'none'] },
     independentOutcomes: { type: 'integer' },
     capabilities: { type: 'array', items: { type: 'string', enum: ['implementation', 'cross_service', 'domain_research', 'operations', 'review'] } },
     uncertainty: { type: 'string', enum: ['low', 'medium', 'high'] },

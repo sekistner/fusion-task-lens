@@ -4,7 +4,7 @@ Fusion is the task record, decision point, and operator UI. The plugin owns the 
 
 ## Working local integration and scenario prototype
 
-The [disposable integration](../local/README.md) installs a task card into Fusion 0.77.0's Definition view. An explicit click invokes a tool-free local Codex assessor, persists its receipt outside the task record, reads native model resolution, and fetches public provider prices. Project defaults are stored in Fusion's plugin settings. The integration uses an exact-version temporary dashboard patch; it is not an upstream dashboard extension or production release.
+The [disposable integration](../local/README.md) installs a dedicated Assessment tab into Fusion 0.77.0 with a compact Definition link. An explicit click invokes a tool-free local Codex assessor, persists its receipt outside the task record, reads native model resolution, and fetches public provider prices. Project defaults are stored in Fusion's plugin settings. The integration uses an exact-version temporary dashboard patch; it is not an upstream dashboard extension or production release.
 
 `npm test` exercises the local routes and synthetic policy/lifecycle helpers. `GET /api/plugins/fusion-plugin-task-observability/scenarios` still returns six synthetic runs; its OTLP round trip is a scenario test, not live task monitoring. There are no live engine callbacks or automatic execution hooks. The remaining lifecycle and routing sections describe the intended contract, not implemented monitoring.
 
@@ -40,7 +40,7 @@ Prototype thresholds are synthetic policy choices. More than two independent out
 
 ## Fusion integration
 
-- **Placement.** Keep the assessment beside Definition and decision history beside Activity/Stats. If operators need a combined view, register a native `task-detail-tab` in the dashboard bundle using the Quality plugin's QA tab as the precedent.
+- **Placement.** Assessment owns current advice, next action, evidence and retained assessment history. Definition contains a compact status/link; Model and Workflow keep native execution authority. Project-wide operational aggregation remains future work.
 - **Shadow mode.** Run the planner on explicitly opted-in tasks before dispatch when practical, persist a task-scoped assessment and recommendation, and compare the recommendation to Fusion's actual model and independently verified result. Do this with the native engine still selecting the model.
 - **Applying a route.** Fusion 0.77 task-created and task-moved hooks run without awaiting their results. The v2 workflow `work-engine` extension does run before native model resolution in `runImplementation` and can park work, but its result types carry no model pair and its placement follows the execution lock claim. A pre-execution workflow node is a candidate for persisting the assessment. Prove the transition to executor reads a fresh, fenced route, or add an explicit engine seam that accepts the recommendation under its dispatch transaction. Verify effective and actual model through normal dispatch, column overrides, role-routed execution, resume, retry, and policy changes. Preserve an explicit operator override and record any native fallback.
 - **Packaging.** Managed Fusion installations may restrict plugins to an approved immutable list. Installing this prototype does not change that list. A native dashboard tab requires host-side registration. Keep plugin data access project/task-scoped. The synthetic route makes no database writes; the local settings route updates only its own plugin settings. Assessment receipts are project/task/settings-bound local sidecars.
@@ -57,3 +57,5 @@ Prototype thresholds are synthetic policy choices. More than two independent out
 | A worker disappeared | Last heartbeat, unknown interval, worker exit and checkpoint reconciliation | Resume a fenced attempt or investigate worker reliability. Count unknown time separately. |
 
 Before enabling routing, replay these cases against one disposable Fusion project, verify the displayed evidence and model actually launched, and prove that pauses, native approval gates, missing capacity and exporter failure leave their intended task behavior intact.
+
+The implemented bounded evidence loop, its journal and failure behavior are described in [the current verification](assessment-loop-verification.md). Broader lifecycle phases and OTLP collection below remain conceptual/scenario-based.

@@ -69,3 +69,7 @@ Remaining boundaries: exact-version local dashboard patch, no hard provider gene
 Astra reviewed the native factory adapter, live-mode routes and runtime image integration. It identified two issues before image rollout: a stalled factory/provider could outlive the request deadline indefinitely, and the card hid actionable first-load errors. Both were fixed and regression-tested. Admission remains closed while a timed-out provider session is still settling; initial authentication, configuration and server errors remain visible. The image passes the existing native authentication helper to the card and verifies unchanged server bytes. Completion-time model identity is also checked. The suite now contains 33 tests.
 
 This is manual advice while the engine is running, not a dispatch hook. The request deadline requests cancellation; it cannot promise exact remote billing termination. Shared account quota is still consumed.
+
+## Dedicated Assessment tab and real evidence loop
+
+The subsequent 0.3.0 review approved the bounded MVP after the source, journal and UI fixes described in [the actual loop verification](assessment-loop-verification.md). Astra inspected the real result screenshot and independently reran focused tests. Automatic model selection remains off; no task holds are changed by assessment.

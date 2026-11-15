@@ -1,6 +1,6 @@
 # Run the real card in a disposable Fusion project
 
-The local integration runs a real signed-in Codex assessor from a small card in native **Definition**. It can write its own plugin defaults and private assessment files. It never writes native executor settings, task status, workflow holds, approvals or dispatch instructions. Automatic selection is unavailable.
+The local integration runs a real signed-in Codex assessor from a small card in native **Assessment**. It can write its own plugin defaults and private assessment files. It never writes native executor settings, task status, workflow holds, approvals or dispatch instructions. Automatic selection is unavailable.
 
 ## Requirements
 
@@ -31,7 +31,7 @@ Wait for [the local dashboard](http://127.0.0.1:55482/) to load, then register t
 node local/register.mjs "$projectId"
 ```
 
-The `bundled.js` entry shim supports Fusion 0.77's dashboard installer. Refresh Fusion after registration. When upgrading an existing trial, use a cache-bypassing browser reload so its compiled dashboard asset is refreshed. Create a synthetic task, open **Definition**, then press **Assess task**. The dashboard runs with `--no-engine --paused`; its engine-disabled banner is expected. Native provider setup may remain incomplete because the assessor uses a separate local CLI adapter.
+The `bundled.js` entry shim supports Fusion 0.77's dashboard installer. Refresh Fusion after registration. When upgrading an existing trial, use a cache-bypassing browser reload so its compiled dashboard asset is refreshed. Create a synthetic task, open **Assessment**, then press **Assess task**. The dashboard runs with `--no-engine --paused`; its engine-disabled banner is expected. Native provider setup may remain incomplete because the assessor uses a separate local CLI adapter.
 
 The example catalog is copied to `$trialRoot/local-models.json` only if absent. It records conservative trial runtime limits, not authoritative current entitlements. Update that private local file only with verified configuration appropriate to your own environment. Public provider pricing is refreshed independently.
 
@@ -68,3 +68,5 @@ The compiled-dashboard patch is temporary. Its exit condition is a supported inl
 ## Verification
 
 Run `npm test` for policy, transport and local-route regressions. [UI evidence](../docs/ui-verification.md) records actual local browser checks separately from synthetic tests. Publication is source availability, not deployment.
+
+Source discovery is admitted only under the disposable project directory by default. Bind a synthetic checkout through Fusion’s native external-checkout route to test successful source observation; an unbound task produces an honest unavailable receipt.

@@ -9,6 +9,7 @@ export function effectiveConfig(stored = {}) {
   const integer = (key, min, max) => { if (!Number.isSafeInteger(config[key]) || config[key] < min || config[key] > max) throw new Error(`${key} must be an integer from ${min} to ${max}`); };
   integer('assessmentInputChars', 1, 32000); integer('assessmentOutputTokens', 1, 4096);
   integer('assessmentTimeoutSeconds', 1, 120); integer('maxOutcomes', 1, 50);
+  integer('maxDiscoveryChecks', 1, 5);
   integer('minSamples', 1, 10000); integer('targetPassPercent', 1, 99);
   integer('headroomPercent', 0, 99); integer('executorOutputTokens', 1, 128000);
   if (!assessorModels.includes(config.assessorModel)) throw new Error('Choose an admitted assessment model');

@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import { assessorModels } from '../local/assessor.mjs';
 // Uses the host's signed-in model factory. No CLI, executor, task lease or
 // workflow action is involved. Missing runtime controls fail before prompting.
-let outstanding = null;
+const leases = globalThis[Symbol.for('fusion.task-lens.native-assessor-leases')] ??= new Map();
 export async function runNativeAssessment(request, root, signal, ctx) {
   if (!assessorModels.includes(request.model) || !ctx.createAiSession) throw new Error('Native assessment model is unavailable');
-  if (outstanding) throw new Error('Previous native assessor is still stopping; no new call was started.');
-  const lease = {}; outstanding = lease;
+  if (leases.has(root)) throw new Error('Previous native assessor is still stopping; no new call was started.');
+  const lease = {}; leases.set(root, lease);
   const started = Date.now(); let session, timeout, cancelled = false, expired = false, cwd;
   let stop;
   const stopped = new Promise((_, reject) => { stop = reject; });
@@ -56,7 +56,7 @@ export async function runNativeAssessment(request, root, signal, ctx) {
     // Keep admission closed until the real provider/factory and cleanup settle.
     // A timed-out request never permits a second orphaned model call.
     try { await session?.dispose?.(); }
-    finally { if (cwd) await rm(cwd, { recursive: true, force: true }); if (outstanding === lease) outstanding = null; }
+    finally { if (cwd) await rm(cwd, { recursive: true, force: true }); if (leases.get(root) === lease) leases.delete(root); }
   }
   })();
   if (signal.aborted) abort();

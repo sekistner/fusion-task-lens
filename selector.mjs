@@ -14,6 +14,15 @@ export const assessmentPrompt = [
   'acceptanceCheck and pitfalls. Use these capability names: implementation,',
   'cross_service, domain_research, operations, review.',
   'Count independently verifiable outcomes. Give an observable acceptance check.',
+  'Also return conclusion (one sentence), nextStep, evidenceQuestion, changed, and discovery.',
+  'discovery is source_review, operator_evidence, or none. source_review is ONLY for checking',
+  'the actual bound checkout/head/base/branch/cleanliness and recorded review identity.',
+  'It cannot inspect code, execute tests, prove service health, executor access or capacity.',
+  'Choose operator_evidence for other missing evidence; do not substitute a source check.',
+  'Use evidence supplied in the task data and explain in changed what it resolves or leaves unknown.',
+  'Recorded reviews are historical records, not freshly executed checks. Operator notes are reported, not verified.',
+  'Never infer test success from a review verdict. Negative evidence is a finding, not a reason to repeat a check.',
+  'All text fields must be brief, under 400 characters each. Use empty evidenceQuestion/changed when not applicable.',
 ].join(' ');
 
 export function assessmentRequest(settings, task, note = '') {
@@ -56,7 +65,19 @@ export async function assessWithModel(runAssessment, settings, task, note) {
   return {
     independentOutcomes: parsed.independentOutcomes, capabilities: [...new Set(parsed.capabilities)],
     uncertainty: parsed.uncertainty, acceptanceCheck: parsed.acceptanceCheck, pitfalls: parsed.pitfalls,
+    ...assessmentDetails(parsed),
   };
+}
+
+function assessmentDetails(parsed) {
+  const discovery = parsed.discovery ?? (parsed.uncertainty === 'high' ? 'operator_evidence' : 'none');
+  if (!['source_review', 'operator_evidence', 'none'].includes(discovery)) throw new Error('Invalid discovery request');
+  for (const key of ['conclusion', 'nextStep', 'evidenceQuestion', 'changed']) {
+    if (parsed[key] !== undefined && (typeof parsed[key] !== 'string' || parsed[key].length > 600)) throw new Error('Invalid assessment details');
+  }
+  return { conclusion: parsed.conclusion || 'Review the task scope and acceptance check below.',
+    nextStep: parsed.nextStep || (discovery === 'none' ? 'Continue through the existing Fusion workflow.' : 'Supply the missing evidence, then reassess.'),
+    evidenceQuestion: parsed.evidenceQuestion || '', changed: parsed.changed || '', discovery };
 }
 
 const nonNegative = number => Number.isFinite(number) && number >= 0;

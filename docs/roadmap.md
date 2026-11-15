@@ -1,3 +1,7 @@
+# Current implementation
+
+The dedicated Assessment tab and bounded source discovery → evidence → reassessment loop are implemented in 0.3.0. See [verification](assessment-loop-verification.md). General discovery tools, automatic routing and live lifecycle/OTLP collection remain outside this release.
+
 # Roadmap: earn trust before dispatch authority
 
 ## 0. Public exercise — available
