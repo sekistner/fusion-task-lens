@@ -30,4 +30,4 @@ Acceptance: a predeclared evaluation can establish whether advice improves decis
 
 Only after explicit user opt-in, add a supported awaited native dispatch boundary that checks fresh task, attempt, model and budget identity atomically. Preserve overrides, role/column routing, native fallbacks, holds and approvals. Verify effective model through actual session acknowledgement across start, retry and resume. Production deployment remains under the host owner's release controls.
 
-The first integration is opt-in per project. It uses the current plan or saved assessment to refine eligible Terra execution to Sol after native model resolution. Qualification still calls for observing a real session, including explicit overrides and native retry behavior, on the installed host.
+The first integration is an opt-in stock Fusion workflow gate. It uses the current plan or saved assessment and writes an eligible choice through Fusion's task model store before native execution. Qualification still calls for observing a real session, including explicit overrides and native retry behavior, on the installed host.

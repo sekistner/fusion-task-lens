@@ -45,7 +45,7 @@ export function TaskLensCard({ react: React, task, projectId, authHeaders = x =>
   if(compact){if((hideUnavailable&&unavailable)||!data)return null;return h('div',{className:'task-lens tl-compact','aria-label':'Assessment status'},h('style',null,styles+redesignedStyles),h('span',null,'Assessment: '+status),button('Open assessment',onOpenAssessment));}
   return h('section',{className:'task-lens tl-tab','aria-label':'Task assessment','data-testid':'task-lens-card'},
     h('style',null,styles+redesignedStyles),
-    h('header',{className:'tl-head'},h('div',null,h('h3',null,view==='settings'?'Assessment settings':'Assessment')),h('div',{className:'tl-actions'},data&&h('span',{className:'tl-badge'},data.automaticSelection?'Task-based execution routing on':'Task-based execution routing off'),button(view==='settings'?'Back to assessment':'Assessment settings',()=>setView(view==='settings'?'result':'settings')))),
+    h('header',{className:'tl-head'},h('div',null,h('h3',null,view==='settings'?'Assessment settings':'Assessment')),h('div',{className:'tl-actions'},data&&h('span',{className:'tl-badge'},data.automaticSelection?'Task Lens workflow routing enabled':'Task-based execution routing off'),button(view==='settings'?'Back to assessment':'Assessment settings',()=>setView(view==='settings'?'result':'settings')))),
     error&&h('div',{className:'tl-error',role:'alert'},error),
     unavailable&&h('p',null,'Task Lens is not enabled for this project.'),
     !data&&!error&&h('p',{role:'status'},'Loading assessment…'),
@@ -82,7 +82,7 @@ export function TaskLensCard({ react: React, task, projectId, authHeaders = x =>
           h('details',null,h('summary',null,'Evidence receipt'),h('pre',{className:'tl-receipt'},JSON.stringify(e,null,2))))),
         button('Add operator evidence',()=>setView('evidence'),blocked)),
       h('section',{className:'tl-model'},h('h4',null,'Execution model'),h('p',null,'Configured preference: ',h('strong',null,pretty(route?.model||config.baseline)),' · Fusion currently resolves: ',h('strong',null,data.assignedAgentRoute?'Assigned agent route — inspect native Model settings':pretty(data.resolved?.modelId))),
-        h('p',{className:'tl-footnote'},data.automaticSelection?'Fusion checks eligible tasks at dispatch. Explicit model choices take priority. Actual executor session: not checked.':'Actual executor session: not checked.'),onOpenModel&&button('Open Fusion Model settings',onOpenModel)),
+        h('p',{className:'tl-footnote'},data.automaticSelection?'Workflows with the Task Lens gate can select Sol before execution. Explicit model choices take priority. Actual executor session: not checked.':'Actual executor session: not checked.'),onOpenModel&&button('Open Fusion Model settings',onOpenModel)),
       a&&h('details',null,h('summary',null,'Scope, acceptance & anticipated pitfalls'),h('p',null,a.independentOutcomes+' independent outcome(s) · '+a.uncertainty+' uncertainty (assessor judgment)'),h('p',null,h('strong',null,'Acceptance: '),a.acceptanceCheck),h('ul',null,...a.pitfalls.map((p,i)=>h('li',{key:i},p)))),
       h('details',null,h('summary',null,'Guidance & assessment model'),
         h('label',{className:'tl-input-label'},'Assessor for the next call',h('select',{value:model,disabled:processing,onChange:e=>setModel(e.target.value)},h('option',{value:''},'Project default ('+pretty(config.assessorModel)+')'),h('option',{value:'openai-codex/gpt-6.1-terra'},'Terra'),h('option',{value:'openai-codex/gpt-6.1-sol'},'Sol'))),

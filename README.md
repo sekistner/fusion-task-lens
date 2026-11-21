@@ -13,7 +13,7 @@ A dedicated **Assessment** tab in Fusion. A real assessor explains the task, pro
 ## What improves the Fusion workflow
 
 - **A useful check before work starts.** The assessor identifies independently verifiable outcomes, uncertainty, an acceptance check and anticipated pitfalls. Large or uncertain tasks can prompt a split or discovery suggestion.
-- **Task-based execution routing.** With the native dispatch integration and project opt-in, Task Lens can select Sol for eligible tasks with at least three planned steps or a current assessment of cross-service work. Explicit model choices take priority.
+- **Task-based execution routing.** Add a Task Lens gate to a Fusion V2 workflow and enable routing for the project. The installed plugin can select Sol for eligible tasks with at least three planned steps or a current assessment of cross-service work. Explicit model choices take priority.
 - **Prices with context.** Expand local context/output limits, public provider prices with timestamps, subscription uncertainty and measured assessor token usage.
 - **Small controls, accessible defaults.** An optional note and per-call assessor choice sit behind a disclosure. Project defaults persist in Fusion's plugin settings; advanced limits stay folded away.
 - **Honest operational insight.** Six synthetic lifecycle scenarios distinguish CI queue delays, slow jobs, missing capacity, repeated outcomes and lost liveness. Live lifecycle collection is still future work.
@@ -50,7 +50,7 @@ The supported check observes bound Git checkout identity, root cleanliness (excl
 
 Discovery is bounded to two attempts per task definition/source scope by default. Review-result changes alone do not replenish that budget. Each attempt shares a 10-second source collection/validation budget; the separately configured assessor deadline and post-generation output target still apply.
 
-The package stays `private: true` to prevent accidental npm publication. The project switch under **Assessment settings** requires the matching native dispatch integration. Fusion applies the decision to a fresh execution session and records the model choice in its logs. Task Lens adds no assessment call at dispatch.
+The package stays `private: true` to prevent accidental npm publication. The [workflow gate](live/README.md#standalone-workflow-routing) saves its choice in the regular Fusion task model fields before execution. Fusion resolves and runs the task through its existing workflow. Task Lens adds no assessment call at dispatch.
 
 ## Settings that actually work
 
@@ -81,7 +81,7 @@ The CLI enforces the configured wall-clock deadline. Its output-token target is 
 | Native model comparison | Read-only executor resolver; assigned-agent routes shown as unchecked |
 | Price/limit drawer | Public DeepInfra refresh, example local limits, actual assessor usage |
 | Lifecycle/OTLP helpers | Synthetic scenarios and local transport tests; no live event stream |
-| Automatic execution routing | Opt-in on a compatible runtime. Eligible complex tasks can use Sol on the existing Codex subscription. Native session logs record the actual model. |
+| Automatic execution routing | Standalone plugin gate for opted-in V2 workflows. Eligible complex tasks can use Sol on the existing Codex subscription. |
 
 ## Review and evidence
 

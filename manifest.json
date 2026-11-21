@@ -58,7 +58,7 @@
     },
     "automaticExecutionRouting": {
       "type": "boolean",
-      "label": "Choose Sol for complex task execution (requires native dispatch integration)",
+      "label": "Choose Sol for complex tasks in workflows with the Task Lens gate",
       "group": "Routing",
       "defaultValue": false
     },

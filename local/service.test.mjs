@@ -18,6 +18,7 @@ async function fixture(t, run, options = {}) {
     getCatalog: async () => [{ id: 'terra', billing: 'subscription', contextTokens: 500000, maxOutputTokens: 128000 }],
     run: async (...args) => { calls++; return run ? run(...args) : { text: JSON.stringify(valid), usage: { input_tokens: 100, output_tokens: 50 }, elapsedMs: 50 }; } });
   const ctx = { taskStore: { getTask: async () => ({ ...task }), getSettingsFast: async () => ({ ...settings }), getPluginStore: () => ({ getPlugin: async () => ({ settings: { ...pluginSettings } }), updatePluginSettings: async (_id, next) => Object.assign(pluginSettings, next) }) } };
+  if (options.dispatchRoutingAvailable) ctx.taskStore.updateTaskAtomic = () => { throw new Error('Settings must never update a task'); };
   const request = (action, body = {}, headers = {}) => routes.find(r => r.path.endsWith('/' + action)).handler({
     params: { id: task.id }, query: { projectId: 'demo' }, headers: { host: '127.0.0.1:55482', ...headers },
     body: { revision: revisionFor(task), settingsRevision: fingerprint(effectiveConfig(pluginSettings)), ...body },

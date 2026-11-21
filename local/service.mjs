@@ -13,7 +13,7 @@ import { executionRevision } from '../live/execution-routing.mjs';
 export const revisionFor = task => fingerprint([task.id, task.title, task.description, task.prompt, task.column, task.modelProvider, task.modelId, task.executionMode, task.assignedAgentId, bindingFor(task), reviewFor(task)]);
 const scopeFor = task => fingerprint([task.id, task.title, task.description, task.prompt, bindingFor(task)]);
 const fail = (status, message) => Object.assign(new Error(message), { status });
-export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_ROOT, project = process.env.FUSION_TASK_LENS_PROJECT_ID, run = runCodexAssessment, nativeHost, nativeModule, manual = false, dispatchRoutingAvailable = false, origin = 'http://127.0.0.1:55482', getCatalog = catalogSnapshot, allowedCheckoutRoots = manual ? [] : root ? [join(root, 'project')] : [] } = {}) {
+export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_ROOT, project = process.env.FUSION_TASK_LENS_PROJECT_ID, run = runCodexAssessment, nativeHost, nativeModule, manual = false, origin = 'http://127.0.0.1:55482', getCatalog = catalogSnapshot, allowedCheckoutRoots = manual ? [] : root ? [join(root, 'project')] : [] } = {}) {
   if (!root || !project) return [];
   const running = operations(root, project); let nativePromise, savingSettings = false;
   const native = () => nativeHost ? Promise.resolve(nativeHost) : nativePromise ??= import(pathToFileURL(nativeModule || join(root, 'install/node_modules/@runfusion/fusion/dist/task-lens-native.mjs')).href);
@@ -65,6 +65,7 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
     const decision = result ? preferenceAdvice(result.assessment, models, inputTokens, config) : null;
     const resolved = task.assignedAgentId ? null : host.resolveExecutorSessionModel(task.modelProvider, task.modelId, settings, undefined, task.credentialInstanceId, task.executionMode);
     const job = running.get(task.id);
+    const dispatchRoutingAvailable = typeof ctx.taskStore.updateTaskAtomic === 'function';
     return { dispatchRoutingAvailable, automaticSelection: dispatchRoutingAvailable && config.automaticExecutionRouting, assessmentAllowed: manual || settings.enginePaused === true, assessorRuntime: manual ? 'Fusion native AI' : 'Local Codex CLI', enginePaused: settings.enginePaused === true, task: { id: task.id, title: task.title, revision }, result, lastFailure,
       history: history.filter(r => !r.unreadable).slice(-20).reverse().map(r => ({...r, status: attempts.find(a => a.id === r.runId)?.state === 'failed' || attempts.find(a => a.id === r.runId)?.state === 'cancelled' ? 'invalidated' : r.revision !== revision || r.settingsRevision !== settingsRevision || r.sourceFingerprint !== source.fingerprint ? 'outdated' : r.runId === result?.runId ? 'current' : 'superseded'})), journalWarnings: [...history, ...evidence, ...attempts].filter(r => r.unreadable).map(r => ({kind:r.kind,id:r.id,message:r.failure.message})), evidence: evidence.filter(r => !r.unreadable).slice(-20).reverse().map(e => ({ ...e, current: e.revision === revision && e.sourceFingerprint === source.fingerprint })),
       attempts: attempts.slice(-10).reverse().map(a => ({ ...a, state: running.get(task.id)?.id === a.id ? a.state : ['checking','assessing','started'].includes(a.state) ? 'interrupted' : a.state })),
@@ -199,7 +200,7 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
         try {
           if (!req.body.settings || Object.keys(req.body.settings).some(key => !Object.hasOwn(effectiveConfig(), key))) throw new Error('Unknown setting');
           config = effectiveConfig(req.body.settings);
-          if (!dispatchRoutingAvailable && config.automaticExecutionRouting && stored?.automaticExecutionRouting !== true) {
+          if (typeof ctx.taskStore.updateTaskAtomic !== 'function' && config.automaticExecutionRouting && stored?.automaticExecutionRouting !== true) {
             throw new Error('This Fusion runtime does not support Task Lens execution routing');
           }
         } catch (error) { throw fail(400, error.message); }

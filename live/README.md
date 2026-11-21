@@ -10,7 +10,25 @@ The Assessment tab additionally requires registration in the compiled dashboard.
 
 The request deadline returns a timeout and requests provider cancellation. If the factory, provider or disposal is still settling, subsequent assessments are refused until cleanup completes. This prevents overlapping orphaned calls; it is not proof that a remote provider stopped spending tokens at the deadline. Unknown usage stays unknown. The output target is checked after generation and is not a spend cap.
 
-Assessment uses the shared provider account and may consume quota even though it does not occupy Fusion's task-execution slots. The optional native execution integration calls the plugin with a task snapshot at dispatch. When enabled for the project, a plan of at least three steps or a current cross-service assessment can qualify for Sol. Fusion checks native model choices again before applying the selection. It uses the existing Codex subscription and native fallback. The plugin writes no task model fields.
+Assessment uses the shared provider account and may consume quota even though it does not occupy Fusion's task-execution slots.
+
+## Standalone workflow routing
+
+Install and enable the plugin in a stock Fusion project. Set `automaticExecutionRouting` to `true` in the project’s Task Lens settings. In a copy of the project's V2 workflow, insert this gate after parsing the plan and before the first execution node. Replace the example project ID with the ID of the project that owns the workflow. Link the gate to the normal executor using a success edge.
+
+```json
+{
+  "id": "task-lens-choose-model",
+  "kind": "gate",
+  "extensions": {
+    "plugin:fusion-plugin-task-observability:choose-executor-model": {
+      "projectId": "proj_example"
+    }
+  }
+}
+```
+
+Fusion awaits the gate, then launches its ordinary executor. The gate can set the task's native model fields to Sol when the inherited execution default is Codex Terra and the task has at least three planned steps or a current cross-service assessment. It checks the task again inside Fusion's atomic update and leaves an existing model or credential choice in place. The normal task Model tab can change or clear a selection. Disabling the project setting stops future selections. The Assessment tab is optional for plan-based routing.
 
 ## Source discovery admission
 
