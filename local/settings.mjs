@@ -15,6 +15,7 @@ export function effectiveConfig(stored = {}) {
   if (!assessorModels.includes(config.assessorModel)) throw new Error('Choose an admitted assessment model');
   if (typeof config.guidance !== 'string' || config.guidance.length > 4000) throw new Error('Project guidance must be at most 4,000 characters');
   if (!modelIds.includes(config.baseline)) throw new Error('Choose a known baseline model');
+  if (typeof config.automaticExecutionRouting !== 'boolean') throw new Error('Automatic execution routing must be on or off');
   if (!Array.isArray(config.modelOrder) || !config.modelOrder.length || config.modelOrder.some(id => !modelIds.includes(id)) || new Set(config.modelOrder).size !== config.modelOrder.length || !config.modelOrder.includes(config.baseline)) throw new Error('Model order must contain unique known models and include the baseline');
   if (!Number.isFinite(config.paidRequestLimitUsd) || config.paidRequestLimitUsd < 0 || config.paidRequestLimitUsd > 100) throw new Error('Paid request estimate ceiling must be between $0 and $100');
   return config;

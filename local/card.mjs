@@ -45,11 +45,11 @@ export function TaskLensCard({ react: React, task, projectId, authHeaders = x =>
   if(compact){if((hideUnavailable&&unavailable)||!data)return null;return h('div',{className:'task-lens tl-compact','aria-label':'Assessment status'},h('style',null,styles+redesignedStyles),h('span',null,'Assessment: '+status),button('Open assessment',onOpenAssessment));}
   return h('section',{className:'task-lens tl-tab','aria-label':'Task assessment','data-testid':'task-lens-card'},
     h('style',null,styles+redesignedStyles),
-    h('header',{className:'tl-head'},h('div',null,h('h3',null,view==='settings'?'Assessment settings':'Assessment'),h('small',null,'Task Lens · manual decisions, native Fusion execution')),h('div',{className:'tl-actions'},h('span',{className:'tl-badge'},'Automatic model selection off'),button(view==='settings'?'Back to assessment':'Assessment settings',()=>setView(view==='settings'?'result':'settings')))),
+    h('header',{className:'tl-head'},h('div',null,h('h3',null,view==='settings'?'Assessment settings':'Assessment')),h('div',{className:'tl-actions'},data&&h('span',{className:'tl-badge'},data.automaticSelection?'Task-based execution routing on':'Task-based execution routing off'),button(view==='settings'?'Back to assessment':'Assessment settings',()=>setView(view==='settings'?'result':'settings')))),
     error&&h('div',{className:'tl-error',role:'alert'},error),
     unavailable&&h('p',null,'Task Lens is not enabled for this project.'),
     !data&&!error&&h('p',{role:'status'},'Loading assessment…'),
-    data&&view==='settings'?h(ProjectDefaults,{react:React,draft,setDraft,dirty,setDirty,busy:!!busy||processing,save:()=>action('settings'),conflict:dirty&&draftRevision!==data.settingsRevision,discard:()=>{setDraft({...data.settings});setDraftRevision(data.settingsRevision);setDirty(false);setError('');}}):data&&h(React.Fragment,null,
+    data&&view==='settings'?h(ProjectDefaults,{react:React,draft,setDraft,dirty,setDirty,dispatchRoutingAvailable:data.dispatchRoutingAvailable,busy:!!busy||processing,save:()=>action('settings'),conflict:dirty&&draftRevision!==data.settingsRevision,discard:()=>{setDraft({...data.settings});setDraftRevision(data.settingsRevision);setDirty(false);setError('');}}):data&&h(React.Fragment,null,
       h('div',{className:'tl-live',role:'status','aria-live':'polite'},status, result&&' · '+date(result.assessedAt)),
       data.stale&&h('p',{className:'tl-error'},data.staleReasons.join('; ')+'. The previous result is retained; reassess before using it.'),
       h('h2',{className:'tl-conclusion'},a?.conclusion||'Assess this task to decide what to do next.'),
@@ -82,7 +82,7 @@ export function TaskLensCard({ react: React, task, projectId, authHeaders = x =>
           h('details',null,h('summary',null,'Evidence receipt'),h('pre',{className:'tl-receipt'},JSON.stringify(e,null,2))))),
         button('Add operator evidence',()=>setView('evidence'),blocked)),
       h('section',{className:'tl-model'},h('h4',null,'Execution model'),h('p',null,'Configured preference: ',h('strong',null,pretty(route?.model||config.baseline)),' · Fusion currently resolves: ',h('strong',null,data.assignedAgentRoute?'Assigned agent route — inspect native Model settings':pretty(data.resolved?.modelId))),
-        h('p',{className:'tl-footnote'},'Capability fit and account access are unverified. Actual executor session: not checked. Model changes remain manual.'),onOpenModel&&button('Open Fusion Model settings',onOpenModel)),
+        h('p',{className:'tl-footnote'},data.automaticSelection?'Fusion checks eligible tasks at dispatch. Explicit model choices take priority. Actual executor session: not checked.':'Actual executor session: not checked.'),onOpenModel&&button('Open Fusion Model settings',onOpenModel)),
       a&&h('details',null,h('summary',null,'Scope, acceptance & anticipated pitfalls'),h('p',null,a.independentOutcomes+' independent outcome(s) · '+a.uncertainty+' uncertainty (assessor judgment)'),h('p',null,h('strong',null,'Acceptance: '),a.acceptanceCheck),h('ul',null,...a.pitfalls.map((p,i)=>h('li',{key:i},p)))),
       h('details',null,h('summary',null,'Guidance & assessment model'),
         h('label',{className:'tl-input-label'},'Assessor for the next call',h('select',{value:model,disabled:processing,onChange:e=>setModel(e.target.value)},h('option',{value:''},'Project default ('+pretty(config.assessorModel)+')'),h('option',{value:'openai-codex/gpt-6.1-terra'},'Terra'),h('option',{value:'openai-codex/gpt-6.1-sol'},'Sol'))),
@@ -95,14 +95,16 @@ export function TaskLensCard({ react: React, task, projectId, authHeaders = x =>
 }
 const redesignedStyles=`.tl-tab{border:0;border-radius:0;background:transparent;max-width:1080px;margin:0;padding:20px}.tl-tab .tl-conclusion{font-size:21px;line-height:1.35;margin:16px 0}.tl-tab .tl-next{background:var(--bg-secondary,rgba(128,128,128,.08));padding:16px;border-radius:8px;margin:18px 0}.tl-tab .tl-next h4{margin-top:0}.tl-tab .tl-evidence{border-bottom:1px solid var(--border-color,#465461);padding:12px 0}.tl-tab .tl-receipt{white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;max-height:360px;overflow:auto}.tl-tab .tl-model{margin:18px 0}.tl-tab .tl-head .tl-actions{margin:0}.tl-tab h4{font-size:13px}.tl-tab small,.tl-tab .tl-footnote{font-size:12px;opacity:.8}.tl-tab .tl-live{margin:12px 0}.tl-compact{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px 14px}.tl-tab button:disabled{cursor:default}.tl-tab .tl-defaults[open]>summary{display:none}.tl-tab .tl-defaults{border:0;margin:0;padding:0}@media(max-width:600px){.tl-tab{padding:14px}.tl-tab .tl-head{gap:12px}.tl-tab .tl-head .tl-actions{justify-content:flex-start}.tl-tab .tl-badge{white-space:normal}}`;
 
-function ProjectDefaults({ react: React, draft, setDraft, dirty, setDirty, busy, save, conflict, discard }) {
+function ProjectDefaults({ react: React, draft, setDraft, dirty, setDirty, dispatchRoutingAvailable, busy, save, conflict, discard }) {
   const h = React.createElement;
   if (!draft) return null;
   const change = (key, value) => { setDirty(true); setDraft(current => ({ ...current, [key]: value })); };
   const number = (key, label, min, max, step = 1) => h('label', { className: 'tl-input-label', key }, label,
     h('input', { type: 'number', min, max, step, value: draft[key], disabled: busy, onChange: e => change(key, Number(e.target.value)) }));
   return h('details', { className: 'tl-defaults', open: true }, h('summary', null, 'Project defaults' + (dirty ? ' · unsaved' : '')),
-    h('p', { className: 'tl-footnote' }, 'Saved in this Fusion project’s plugin settings. Changes affect assessment and advisory estimates only; automatic selection stays off.'),
+    dispatchRoutingAvailable && h('label', null,
+      h('input', { type: 'checkbox', checked: draft.automaticExecutionRouting === true, disabled: busy, onChange: e => change('automaticExecutionRouting', e.target.checked) }),
+      ' Choose Sol for complex task execution'),
     conflict && h('p', { role: 'alert' }, 'Defaults changed elsewhere. Reload before saving to avoid overwriting them.'),
     h('div', { className: 'tl-settings-grid' },
       h('label', { className: 'tl-input-label' }, 'Default assessor', h('select', { value: draft.assessorModel, disabled: busy, onChange: e => change('assessorModel', e.target.value) },

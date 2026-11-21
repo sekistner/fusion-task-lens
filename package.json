@@ -1,6 +1,6 @@
 {
   "name": "fusion-plugin-task-observability",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "exports": {
@@ -9,7 +9,7 @@
     }
   },
   "scripts": {
-    "test": "node --test policy.test.mjs local/*.test.mjs live/assessor.test.mjs",
+    "test": "node --test policy.test.mjs local/*.test.mjs live/*.test.mjs",
     "demo": "node examples/scenarios.mjs"
   },
   "description": "Manual assessment, bounded source discovery and evidence-based reassessment in Fusion.",

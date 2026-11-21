@@ -1,8 +1,8 @@
 {
   "id": "fusion-plugin-task-observability",
   "name": "Fusion Task Lens",
-  "version": "0.3.0",
-  "description": "Task assessment with bounded source/review discovery, evidence and reassessment. Automatic model selection is unavailable.",
+  "version": "0.4.0",
+  "description": "Task assessment, bounded source discovery, and optional model selection at native task dispatch.",
   "fusionVersion": ">=0.77.0",
   "settingsSchema": {
     "maxDiscoveryChecks": {
@@ -55,6 +55,12 @@
       "label": "Baseline executor",
       "group": "Routing",
       "defaultValue": "terra"
+    },
+    "automaticExecutionRouting": {
+      "type": "boolean",
+      "label": "Choose Sol for complex task execution (requires native dispatch integration)",
+      "group": "Routing",
+      "defaultValue": false
     },
     "maxOutcomes": {
       "type": "number",

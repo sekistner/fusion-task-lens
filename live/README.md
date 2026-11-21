@@ -10,7 +10,7 @@ The Assessment tab additionally requires registration in the compiled dashboard.
 
 The request deadline returns a timeout and requests provider cancellation. If the factory, provider or disposal is still settling, subsequent assessments are refused until cleanup completes. This prevents overlapping orphaned calls; it is not proof that a remote provider stopped spending tokens at the deadline. Unknown usage stays unknown. The output target is checked after generation and is not a spend cap.
 
-Assessment uses the shared provider account and may consume quota even though it does not occupy Fusion's task-execution slots. Automatic selection is unavailable. The plugin has no engine hooks and no task mutation path. Keep native model overrides, approval holds and existing task pauses unchanged during installation and verification.
+Assessment uses the shared provider account and may consume quota even though it does not occupy Fusion's task-execution slots. The optional native execution integration calls the plugin with a task snapshot at dispatch. When enabled for the project, a plan of at least three steps or a current cross-service assessment can qualify for Sol. Fusion checks native model choices again before applying the selection. It uses the existing Codex subscription and native fallback. The plugin writes no task model fields.
 
 ## Source discovery admission
 

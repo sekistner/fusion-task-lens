@@ -42,6 +42,16 @@ test('foreign origin, automatic routing and stale revision fail before a model c
   f.settings.enginePaused = false;
   assert.equal((await f.request('assess')).status, 409); assert.equal(f.calls(), 0);
 });
+test('project settings only activate execution routing on a compatible runtime', async t => {
+  const settings = { ...effectiveConfig(), automaticExecutionRouting: true };
+  const unsupported = await fixture(t);
+  assert.equal((await unsupported.request('settings', { settings })).status, 400);
+  const supported = await fixture(t, null, { dispatchRoutingAvailable: true });
+  assert.equal((await supported.request('assessment')).automaticSelection, false);
+  assert.equal((await supported.request('settings', { settings })).automaticSelection, true);
+  assert.equal((await supported.request('assessment')).automaticSelection, true);
+  assert.equal(supported.calls(), 0);
+});
 test('task edit during inference discards the late assessment', async t => {
   let finish;
   const f = await fixture(t, async () => new Promise(resolve => { finish = resolve; }));

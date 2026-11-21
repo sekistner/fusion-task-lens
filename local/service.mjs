@@ -9,10 +9,11 @@ import { catalogSnapshot } from './catalog.mjs';
 import { effectiveConfig, fingerprint, preferenceAdvice, pluginId } from './settings.mjs';
 import { bindingFor, reviewFor, observeSource, checkSpec } from './discovery.mjs';
 import { journal, operations } from './journal.mjs';
+import { executionRevision } from '../live/execution-routing.mjs';
 export const revisionFor = task => fingerprint([task.id, task.title, task.description, task.prompt, task.column, task.modelProvider, task.modelId, task.executionMode, task.assignedAgentId, bindingFor(task), reviewFor(task)]);
 const scopeFor = task => fingerprint([task.id, task.title, task.description, task.prompt, bindingFor(task)]);
 const fail = (status, message) => Object.assign(new Error(message), { status });
-export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_ROOT, project = process.env.FUSION_TASK_LENS_PROJECT_ID, run = runCodexAssessment, nativeHost, nativeModule, manual = false, origin = 'http://127.0.0.1:55482', getCatalog = catalogSnapshot, allowedCheckoutRoots = manual ? [] : root ? [join(root, 'project')] : [] } = {}) {
+export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_ROOT, project = process.env.FUSION_TASK_LENS_PROJECT_ID, run = runCodexAssessment, nativeHost, nativeModule, manual = false, dispatchRoutingAvailable = false, origin = 'http://127.0.0.1:55482', getCatalog = catalogSnapshot, allowedCheckoutRoots = manual ? [] : root ? [join(root, 'project')] : [] } = {}) {
   if (!root || !project) return [];
   const running = operations(root, project); let nativePromise, savingSettings = false;
   const native = () => nativeHost ? Promise.resolve(nativeHost) : nativePromise ??= import(pathToFileURL(nativeModule || join(root, 'install/node_modules/@runfusion/fusion/dist/task-lens-native.mjs')).href);
@@ -64,7 +65,7 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
     const decision = result ? preferenceAdvice(result.assessment, models, inputTokens, config) : null;
     const resolved = task.assignedAgentId ? null : host.resolveExecutorSessionModel(task.modelProvider, task.modelId, settings, undefined, task.credentialInstanceId, task.executionMode);
     const job = running.get(task.id);
-    return { automaticSelection: false, assessmentAllowed: manual || settings.enginePaused === true, assessorRuntime: manual ? 'Fusion native AI' : 'Local Codex CLI', enginePaused: settings.enginePaused === true, task: { id: task.id, title: task.title, revision }, result, lastFailure,
+    return { dispatchRoutingAvailable, automaticSelection: dispatchRoutingAvailable && config.automaticExecutionRouting, assessmentAllowed: manual || settings.enginePaused === true, assessorRuntime: manual ? 'Fusion native AI' : 'Local Codex CLI', enginePaused: settings.enginePaused === true, task: { id: task.id, title: task.title, revision }, result, lastFailure,
       history: history.filter(r => !r.unreadable).slice(-20).reverse().map(r => ({...r, status: attempts.find(a => a.id === r.runId)?.state === 'failed' || attempts.find(a => a.id === r.runId)?.state === 'cancelled' ? 'invalidated' : r.revision !== revision || r.settingsRevision !== settingsRevision || r.sourceFingerprint !== source.fingerprint ? 'outdated' : r.runId === result?.runId ? 'current' : 'superseded'})), journalWarnings: [...history, ...evidence, ...attempts].filter(r => r.unreadable).map(r => ({kind:r.kind,id:r.id,message:r.failure.message})), evidence: evidence.filter(r => !r.unreadable).slice(-20).reverse().map(e => ({ ...e, current: e.revision === revision && e.sourceFingerprint === source.fingerprint })),
       attempts: attempts.slice(-10).reverse().map(a => ({ ...a, state: running.get(task.id)?.id === a.id ? a.state : ['checking','assessing','started'].includes(a.state) ? 'interrupted' : a.state })),
       sourceFingerprint: source.fingerprint, discovery: { ...checkSpec, used, limit: config.maxDiscoveryChecks, enabled: allowedCheckoutRoots.length > 0 && !attempts.some(r=>r.unreadable), blockedReason: attempts.some(r=>r.unreadable) ? 'Discovery budget cannot be established: unreadable operation record. Operator recovery is needed.' : !allowedCheckoutRoots.length ? 'Source discovery is not configured for this installation.' : null },
@@ -168,7 +169,7 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
         receipt = await run(request, root, controller.signal, ctx); return receipt.text;
       }, { ...config, assessorModel: model }, input, note);
       const result = { assessment, model, completedModel: receipt.completedModel ?? null, usage: receipt.usage, elapsedMs: receipt.elapsedMs,
-        revision, settingsRevision, sourceFingerprint: source.fingerprint, config, runId: id, note, assessedAt: new Date().toISOString(),
+        revision, executionRevision: executionRevision(task), settingsRevision, sourceFingerprint: source.fingerprint, config, runId: id, note, assessedAt: new Date().toISOString(),
         previousRunId: previous?.runId ?? null, evidenceIds: evidence ? [evidence.id] : [], inputFingerprint: fingerprint(input) };
       // Immutable history may contain an outcome invalidated immediately afterward;
       // the separately fenced latest pointer determines whether it is current.
@@ -198,6 +199,9 @@ export function createLocalRoutes({ root = process.env.FUSION_TASK_LENS_LOCAL_RO
         try {
           if (!req.body.settings || Object.keys(req.body.settings).some(key => !Object.hasOwn(effectiveConfig(), key))) throw new Error('Unknown setting');
           config = effectiveConfig(req.body.settings);
+          if (!dispatchRoutingAvailable && config.automaticExecutionRouting && stored?.automaticExecutionRouting !== true) {
+            throw new Error('This Fusion runtime does not support Task Lens execution routing');
+          }
         } catch (error) { throw fail(400, error.message); }
         let expected; try { expected = fingerprint(effectiveConfig(stored)); } catch { expected = 'invalid'; }
         if (req.body.settingsRevision !== expected) throw fail(409, 'Project defaults changed elsewhere. Reload before saving.');

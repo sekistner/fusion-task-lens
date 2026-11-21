@@ -1,6 +1,6 @@
 import { runScenarios } from './scenarios.mjs';
 import { createLocalRoutes } from './local/service.mjs';
-import { liveRoutes } from './live/config.mjs';
+import { liveRoutes, selectExecutionModel } from './live/config.mjs';
 import manifest from './manifest.json' with { type: 'json' };
 
 // Fusion's loader accepts a default-exported FusionPlugin object.
@@ -8,6 +8,7 @@ export default {
   manifest,
   state: 'installed',
   hooks: {},
+  selectExecutionModel,
   routes: [{
     method: 'GET',
     path: '/scenarios',
