@@ -13,8 +13,9 @@ function fixture() {
   const installation = { enabled: true, settings: { automaticExecutionRouting: true } };
   const selectedWorkflowSettings = {};
   const routing = createWorkflowRouting(() => undefined);
-  const node = { kind: 'gate', extensions: { [extensionKey]: { projectId } } };
+  const node = { kind: 'gate', column: 'in-progress', extensions: { [extensionKey]: { projectId } } };
   const workflow = { columns: [{ id: 'in-progress' }] };
+  const messages = [];
   let live = task, writes = 0, beforeAtomic = () => {};
   const store = {
     getWorkflowSettingsProjectId: () => projectId,
@@ -31,9 +32,9 @@ function fixture() {
       return live;
     },
   };
-  routing.hooks.onLoad({ taskStore: store });
+  routing.hooks.onLoad({ taskStore: store, logger: { info: message => messages.push(message) } });
   return {
-    task, settings, installation, selectedWorkflowSettings, node, workflow,
+    task, settings, installation, selectedWorkflowSettings, node, workflow, messages,
     route: (override = {}) => routing.workflowExtensions[0].handle({ task, node, workflow, ...override }),
     unload: () => routing.hooks.onUnload({ taskStore: store }),
     live: () => live, change: patch => { live = { ...live, ...patch }; },
@@ -47,6 +48,27 @@ test('Task Lens ships a native workflow extension and only fills model fields on
   assert.deepEqual(await f.route(), { outcome: 'success', value: 'multi-step-plan' });
   assert.deepEqual(f.live(), { ...f.task, modelProvider: 'openai-codex', modelId: 'gpt-6.1-sol' });
   assert.equal((await f.route()).value, 'native-default');
+  assert.equal(f.writes(), 1);
+});
+
+test('uses the live column at the gate when Fusion passes the previous column', async () => {
+  const f = fixture();
+  assert.equal((await f.route({ task: { ...f.task, column: 'todo' } })).value, 'multi-step-plan');
+  assert.equal(f.live().modelId, 'gpt-6.1-sol');
+  const moved = fixture();
+  moved.change({ column: 'in-review' });
+  assert.equal((await moved.route()).value, 'native-default');
+  assert.equal(moved.writes(), 0);
+});
+
+test('records a failed native write and selects the default on a later invocation', async () => {
+  const f = fixture();
+  f.atUpdate(() => { throw new Error('transaction unavailable'); });
+  assert.equal((await f.route()).value, 'native-default');
+  assert.match(f.messages.at(-1), /native \(failed-write-task-default\)/);
+  f.atUpdate(() => {});
+  assert.equal((await f.route()).value, 'multi-step-plan');
+  assert.match(f.messages.at(-1), /sol \(multi-step-plan\)/);
   assert.equal(f.writes(), 1);
 });
 
