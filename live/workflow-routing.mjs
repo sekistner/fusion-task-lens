@@ -1,4 +1,4 @@
-import { chooseExecutionModel, executionRevision } from './execution-routing.mjs';
+import { chooseExecutionModel, executionWriteRevision } from './execution-routing.mjs';
 import { pluginId } from '../local/settings.mjs';
 
 const extensionId = 'choose-executor-model';
@@ -53,7 +53,8 @@ export function createWorkflowRouting(resolveInstallation) {
           // Fusion's graph can retain the task snapshot from its previous column.
           // Use the gate's declared column to check where the live task belongs.
           const column = node.column ?? task.column;
-          if (fresh.lineageId !== task.lineageId || fresh.column !== column) return skip('task-changed');
+          if (fresh.lineageId !== task.lineageId) return skip('lineage-changed');
+          if (fresh.column !== column) return skip('column-changed');
           if (hasSelection(fresh)) return skip('explicit-task-model');
           if (!eligible(fresh)) return skip('execution-already-started-or-held');
 
@@ -81,16 +82,21 @@ export function createWorkflowRouting(resolveInstallation) {
           const selected = await chooseExecutionModel(fresh, resolveInstallation(project), installation.settings);
           if (signal?.aborted) return skip('inactive-run');
           if (!selected) return skip('baseline-for-task');
-          const revision = executionRevision(fresh);
+          const revision = executionWriteRevision(fresh);
           stage = 'write-task-default';
-          let applied = false;
+          let refusal;
           const updated = await store.updateTaskAtomic(task.id, current => {
-            if (signal?.aborted || current.column !== column || current.assignedAgentId !== fresh.assignedAgentId
-              || !eligible(current) || executionRevision(current) !== revision) return null;
-            applied = true;
+            if (signal?.aborted) refusal = 'inactive-run';
+            else if (current.column !== column) refusal = 'column-changed';
+            else if (current.assignedAgentId !== fresh.assignedAgentId) refusal = 'assignee-changed';
+            else if (hasSelection(current)) refusal = 'explicit-task-model';
+            else if (!eligible(current)) refusal = 'execution-already-started-or-held';
+            else if (executionWriteRevision(current) !== revision) refusal = 'plan-or-scope-changed';
+            if (refusal) return null;
             return { modelProvider: selected.provider, modelId: selected.modelId };
           });
-          if (!applied || updated?.modelProvider !== selected.provider || updated?.modelId !== selected.modelId) return skip('task-changed');
+          if (refusal) return skip(refusal);
+          if (updated?.modelProvider !== selected.provider || updated?.modelId !== selected.modelId) return skip('model-write-not-confirmed');
           return report('sol', selected.reason);
         } catch {
           // Keep this failure local to the task. Throwing disables the shared

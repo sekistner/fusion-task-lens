@@ -6,7 +6,7 @@ import { createWorkflowRouting } from './workflow-routing.mjs';
 const projectId = 'proj_test';
 const extensionKey = 'plugin:fusion-plugin-task-observability:choose-executor-model';
 
-function fixture() {
+function fixture(detail = {}) {
   const task = { id: 'TEST-1', lineageId: 'original', column: 'in-progress', title: 'Update the catalog',
     steps: ['Update schema', 'Update query', 'Verify lookup'].map(name => ({ name, status: 'pending' })) };
   const settings = { defaultProvider: 'openai-codex', defaultModelId: 'gpt-6.1-terra' };
@@ -23,7 +23,7 @@ function fixture() {
     getTaskWorkflowSelectionAsync: async () => ({ workflowId: 'custom:task-lens' }),
     getWorkflowSettingValuesAsync: async id => id === 'custom:task-lens' ? selectedWorkflowSettings : {},
     getSettings: async () => settings,
-    getTask: async () => ({ ...live }),
+    getTask: async () => ({ ...live, ...detail }),
     getPluginStore: () => ({ getPlugin: async () => installation }),
     updateTaskAtomic: async (_id, update) => {
       beforeAtomic();
@@ -103,6 +103,23 @@ test('checks the live model and task scope within the native update', async () =
   stale.atUpdate(() => stale.change({ description: 'Edited scope' }));
   assert.equal((await stale.route()).value, 'native-default');
   assert.equal(stale.writes(), 0);
+});
+
+test('writes Sol when only the detailed read includes PROMPT.md', async () => {
+  const f = fixture({ prompt: '# Reviewed three-step spec' });
+  f.change({ approvedPlanFingerprint: 'approved-spec' });
+  assert.equal((await f.route()).value, 'multi-step-plan');
+  assert.equal(f.live().modelId, 'gpt-6.1-sol');
+  assert.equal(f.writes(), 1);
+});
+
+test('does not replace the default if the stored plan approval changed', async () => {
+  const f = fixture({ prompt: '# Reviewed three-step spec' });
+  f.change({ approvedPlanFingerprint: 'approved-spec' });
+  f.atUpdate(() => f.change({ approvedPlanFingerprint: 'new-spec' }));
+  assert.equal((await f.route()).value, 'native-default');
+  assert.match(f.messages.at(-1), /plan-or-scope-changed/);
+  assert.equal(f.writes(), 0);
 });
 
 test('the gate is inert for a small plan, disabled project, cancelled run, or unloaded plugin', async () => {

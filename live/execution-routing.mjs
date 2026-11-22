@@ -14,6 +14,12 @@ export function executionRevision(task) {
   ]);
 }
 
+// Fusion adds PROMPT.md to getTask(), but its locked update reads the stored
+// row. Both views carry the approved plan fingerprint and the parsed steps.
+export function executionWriteRevision(task) {
+  return executionRevision({ ...task, prompt: task.approvedPlanFingerprint });
+}
+
 export async function chooseExecutionModel(task, installation, stored) {
   const config = effectiveConfig(stored);
   if (!config.automaticExecutionRouting || !config.modelOrder.includes('sol')) return;
